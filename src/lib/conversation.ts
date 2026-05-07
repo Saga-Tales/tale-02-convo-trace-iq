@@ -40,6 +40,8 @@ export async function startSession(opts: {
     scenarioObjectives: opts.scenario.objectives,
     scenarioKeyExpressions: opts.scenario.keyExpressions,
     scenarioLearningGoals: opts.scenario.learningGoals,
+    scenarioUserRole: opts.scenario.userRole,
+    scenarioAiRole: opts.scenario.aiRole,
     difficulty: opts.difficulty,
     tags: opts.tags,
     mode: opts.mode,

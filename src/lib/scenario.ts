@@ -1,14 +1,14 @@
 import { callOnce } from './anthropic'
-import type { Difficulty } from '@/db/schema'
+import type { Difficulty, DialogTurn } from '@/db/schema'
 
 export interface Scenario {
   title: string
   brief: string
   userRole: string
   aiRole: string
-  objectives: string[]       // 회화 진행 단계 (한국어, 3-5개)
-  keyExpressions: string[]   // 핵심 영어 표현 예시 (3-7개)
-  learningGoals: string[]    // 만나게 될 표현·단어 (한국어, 짧게)
+  objectives: string[]
+  keyExpressions: DialogTurn[]
+  learningGoals: string[]
   openingLine: string
 }
 
@@ -23,21 +23,27 @@ const SYSTEM_PROMPT = `너는 영어 회화 학습 도구의 시나리오 생성
   "userRole": "사용자가 맡을 역할 (한국어, 짧게)",
   "aiRole": "AI가 맡을 역할 (한국어, 짧게)",
   "objectives": ["회화 진행 단계 (한국어, 짧게)", "..."],
-  "keyExpressions": ["사용 가능한 영어 표현 (1-2문장)", "..."],
+  "keyExpressions": [
+    {"speaker": "partner", "english": "Hi, glad you could make it.", "intentKo": "환영 인사"},
+    {"speaker": "user", "english": "Thanks for having me.", "intentKo": "초대해줘서 감사"},
+    ...
+  ],
   "learningGoals": ["만나게 될 표현·단어 (한국어, 짧게)", "..."],
   "openingLine": "AI가 회화를 여는 첫 영어 문장 (1-2문장)"
 }
 
 규칙:
 - brief: 단순 상황만 던지지 말고 분위기·배경·동기까지. 사용자가 시나리오를 읽기만 해도 회화 흐름이 그려지게.
-- objectives: 3-5개. 회화가 어떻게 흘러갈지 단계별 가이드. 못하는 사람도 "다음에 뭘 말해야 하지?" 알 수 있게.
-  예: "1. 자기소개와 회사 한 줄 설명", "2. 우리 제품의 시장 기회 짧게 강조", "3. 현재 라운드 단계와 목표 금액 언급"
-- keyExpressions: 3-7개. 시나리오에서 자연스럽게 쓸 수 있는 영어 표현. 막힐 때 따라할 수 있는 실제 문장. 난이도에 맞게.
-  예: "We're currently raising our seed round.", "Our team has deep experience in fintech."
+- objectives: 3-5개. 회화가 어떻게 흘러갈지 단계별 가이드.
+- keyExpressions: 4-6 turns. partner와 user가 자연스럽게 번갈아 나오는 대화 흐름.
+  * 각 turn은 1-2 짧은 문장. 절대 길게 늘어놓지 말 것.
+  * speaker는 정확히 'user' 또는 'partner'.
+  * 첫 turn은 보통 partner부터 시작 (openingLine과 자연스럽게 이어지게).
+  * intentKo는 한국어로 그 turn의 의도/직역을 짧게 (1줄, 30자 이내).
+  * 사용자가 "내 차례에 뭘 말해야 하지?" 알 수 있게 user turn에 자연스러운 대답 패턴을 보여줄 것.
 - learningGoals: 2-4개. 만나게 될 표현·단어를 한국어로 짧게.
 - 난이도에 맞는 어휘 수준
-- 일상적이고 실용적인 상황만 (판타지 X, 비현실적 상황 X)
-- 모든 텍스트의 따옴표 escape 정확히`
+- 일상적이고 실용적인 상황만`
 
 const DIFFICULTY_HINT: Record<Difficulty, string> = {
   A1: 'A1 입문 — 기본 인사, 단순 자기소개, 한 단어 또는 짧은 문장 위주',
@@ -71,12 +77,12 @@ export async function generateScenario(opts: {
 카테고리: ${tagDesc}
 추가 요청: ${opts.hint || '(없음)'}
 
-위 조건에 맞는 시나리오 1개를 JSON으로 생성. 사용자가 회화 못해도 시나리오만 보고 따라할 수 있게 풍부하게.`
+위 조건에 맞는 시나리오 1개를 JSON으로 생성. keyExpressions는 짧은 turn들이 자연스럽게 번갈아 나오는 대화 흐름으로.`
 
   const text = await callOnce({
     system: SYSTEM_PROMPT,
     user: userPrompt,
-    maxTokens: 1500,
+    maxTokens: 2000,
   })
 
   const cleaned = text
@@ -110,7 +116,9 @@ function validateScenario(raw: unknown): Scenario {
 
   const brief = r.brief
   if (typeof brief !== 'string' || brief.length < 30 || brief.length > 1500) {
-    throw new Error(`brief 검증 실패 (30-1500자, 받음 ${typeof brief === 'string' ? brief.length : 'non-string'}자)`)
+    throw new Error(
+      `brief 검증 실패 (30-1500자, 받음 ${typeof brief === 'string' ? brief.length : 'non-string'}자)`,
+    )
   }
 
   const userRole = r.userRole
@@ -124,8 +132,14 @@ function validateScenario(raw: unknown): Scenario {
   }
 
   const objectives = r.objectives
-  if (!Array.isArray(objectives) || objectives.length < 2 || objectives.length > 7) {
-    throw new Error(`objectives 검증 실패 (2-7개, 받음 ${Array.isArray(objectives) ? objectives.length : 'non-array'}개)`)
+  if (
+    !Array.isArray(objectives) ||
+    objectives.length < 2 ||
+    objectives.length > 7
+  ) {
+    throw new Error(
+      `objectives 검증 실패 (2-7개, 받음 ${Array.isArray(objectives) ? objectives.length : 'non-array'}개)`,
+    )
   }
   if (!objectives.every((o) => typeof o === 'string' && o.length > 0 && o.length < 200)) {
     throw new Error('objectives 항목 검증 실패')
@@ -134,13 +148,38 @@ function validateScenario(raw: unknown): Scenario {
   const keyExpressions = r.keyExpressions
   if (
     !Array.isArray(keyExpressions) ||
-    keyExpressions.length < 2 ||
-    keyExpressions.length > 10
+    keyExpressions.length < 3 ||
+    keyExpressions.length > 8
   ) {
-    throw new Error(`keyExpressions 검증 실패 (2-10개, 받음 ${Array.isArray(keyExpressions) ? keyExpressions.length : 'non-array'}개)`)
+    throw new Error(
+      `keyExpressions 검증 실패 (3-8 turns, 받음 ${Array.isArray(keyExpressions) ? keyExpressions.length : 'non-array'}개)`,
+    )
   }
-  if (!keyExpressions.every((e) => typeof e === 'string' && e.length > 0 && e.length < 300)) {
-    throw new Error('keyExpressions 항목 검증 실패')
+  const dialogTurns: DialogTurn[] = []
+  for (let i = 0; i < keyExpressions.length; i++) {
+    const t = keyExpressions[i]
+    if (!t || typeof t !== 'object') {
+      throw new Error(`keyExpressions[${i}] object 아님`)
+    }
+    const tt = t as Record<string, unknown>
+    const speaker = tt.speaker
+    if (speaker !== 'user' && speaker !== 'partner') {
+      throw new Error(
+        `keyExpressions[${i}].speaker 검증 실패 (user|partner, 받음 ${JSON.stringify(speaker)})`,
+      )
+    }
+    const english = tt.english
+    if (typeof english !== 'string' || english.length < 1 || english.length > 250) {
+      throw new Error(`keyExpressions[${i}].english 검증 실패 (1-250자)`)
+    }
+    let intentKo: string | undefined
+    if (tt.intentKo !== undefined && tt.intentKo !== null && tt.intentKo !== '') {
+      if (typeof tt.intentKo !== 'string' || tt.intentKo.length > 100) {
+        throw new Error(`keyExpressions[${i}].intentKo 검증 실패 (string, max 100자)`)
+      }
+      intentKo = tt.intentKo
+    }
+    dialogTurns.push({ speaker, english, intentKo })
   }
 
   const learningGoals = r.learningGoals
@@ -174,7 +213,7 @@ function validateScenario(raw: unknown): Scenario {
     userRole,
     aiRole,
     objectives: objectives as string[],
-    keyExpressions: keyExpressions as string[],
+    keyExpressions: dialogTurns,
     learningGoals: learningGoals as string[],
     openingLine,
   }

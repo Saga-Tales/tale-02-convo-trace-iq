@@ -119,6 +119,7 @@ export function Chat() {
         <ScenarioPreview
           scenario={state.scenario}
           mode={state.opts.mode}
+          partnerName={state.opts.partnerName}
           onStart={() => handleStart(state.scenario, state.opts)}
           onRegenerate={() => handleGenerate(state.opts)}
           onCancel={() => setState({ kind: 'setup' })}
@@ -131,6 +132,7 @@ export function Chat() {
         <ScenarioPreview
           scenario={state.scenario}
           mode={state.opts.mode}
+          partnerName={state.opts.partnerName}
           onStart={() => {}}
           onRegenerate={() => {}}
           onCancel={() => {}}

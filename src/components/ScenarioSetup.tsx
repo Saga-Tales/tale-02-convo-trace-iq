@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type KeyboardEvent } from 'react'
 import {
   type Difficulty,
   type SessionMode,
@@ -18,25 +18,43 @@ interface Props {
   loading: boolean
 }
 
-const TAG_LABELS = {
+const PRESET_TAGS = {
   business: '비즈니스',
   daily: '일상',
   office: '사무실',
 } as const
 
-type TagKey = keyof typeof TAG_LABELS
+type PresetTagKey = keyof typeof PRESET_TAGS
+const PRESET_KEYS = Object.keys(PRESET_TAGS) as PresetTagKey[]
 
 export function ScenarioSetup({ onGenerate, loading }: Props) {
   const [mode, setMode] = useState<SessionMode>('solo')
   const [difficulty, setDifficulty] = useState<Difficulty>('B1')
-  const [tags, setTags] = useState<TagKey[]>(['daily'])
+  const [tags, setTags] = useState<string[]>(['daily'])
   const [hint, setHint] = useState('')
   const [partnerName, setPartnerName] = useState('')
+  const [customInput, setCustomInput] = useState('')
 
-  function toggleTag(tag: TagKey) {
+  function toggleTag(tag: string) {
     setTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
     )
+  }
+
+  function addCustomTag() {
+    const t = customInput.trim()
+    if (!t) return
+    if (!tags.includes(t)) {
+      setTags((prev) => [...prev, t])
+    }
+    setCustomInput('')
+  }
+
+  function handleCustomKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+      e.preventDefault()
+      addCustomTag()
+    }
   }
 
   function handleSubmit() {
@@ -49,6 +67,9 @@ export function ScenarioSetup({ onGenerate, loading }: Props) {
     })
   }
 
+  const customTags = tags.filter(
+    (t) => !(PRESET_KEYS as string[]).includes(t),
+  )
   const canSubmit = tags.length > 0 && !loading
 
   return (
@@ -84,7 +105,7 @@ export function ScenarioSetup({ onGenerate, loading }: Props) {
               type="text"
               value={partnerName}
               onChange={(e) => setPartnerName(e.target.value)}
-              placeholder="예: IQ"
+              placeholder="예: 아이큐"
               className="w-full px-3 py-2 border border-line rounded-md bg-bg-soft focus:outline-none focus:border-accent"
             />
           </Field>
@@ -112,17 +133,60 @@ export function ScenarioSetup({ onGenerate, loading }: Props) {
           </div>
         </Field>
 
-        <Field label="카테고리" hint="(여러 개 가능)">
+        <Field label="카테고리" hint="(여러 개 가능, 직접 추가도 OK)">
           <ChoiceRow>
-            {(Object.keys(TAG_LABELS) as TagKey[]).map((t) => (
+            {PRESET_KEYS.map((t) => (
               <Choice
                 key={t}
                 active={tags.includes(t)}
                 onClick={() => toggleTag(t)}
-                label={TAG_LABELS[t]}
+                label={PRESET_TAGS[t]}
               />
             ))}
           </ChoiceRow>
+
+          {/* 자유 입력 */}
+          <div className="flex gap-2 mt-2.5">
+            <input
+              type="text"
+              value={customInput}
+              onChange={(e) => setCustomInput(e.target.value)}
+              onKeyDown={handleCustomKeyDown}
+              placeholder="기타 카테고리 (Enter 추가)"
+              className="flex-1 px-2.5 py-1.5 border border-line rounded-md bg-bg-soft text-sm focus:outline-none focus:border-accent"
+            />
+            <button
+              type="button"
+              onClick={addCustomTag}
+              disabled={!customInput.trim()}
+              className="px-3 py-1.5 border border-line text-ink-soft rounded-md text-sm hover:bg-bg-soft disabled:opacity-40"
+            >
+              추가
+            </button>
+          </div>
+
+          {/* 추가된 custom tags */}
+          {customTags.length > 0 && (
+            <div className="flex gap-1.5 mt-2 flex-wrap">
+              {customTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-accent text-bg rounded-md text-xs"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => toggleTag(tag)}
+                    className="hover:opacity-70 leading-none"
+                    aria-label={`${tag} 제거`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
           {tags.length === 0 && (
             <p className="text-xs text-warn mt-2">
               카테고리를 1개 이상 선택해주세요.

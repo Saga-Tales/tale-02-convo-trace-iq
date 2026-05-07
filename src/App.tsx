@@ -1,4 +1,4 @@
-import { Routes, Route, NavLink, Navigate } from 'react-router-dom'
+import { Routes, Route, NavLink, Navigate, Link } from 'react-router-dom'
 import { Home } from '@/pages/Home'
 import { Chat } from '@/pages/Chat'
 import { Vocab } from '@/pages/Vocab'
@@ -18,9 +18,13 @@ function Nav() {
   return (
     <nav className="border-b border-line bg-bg/80 backdrop-blur sticky top-0 z-10">
       <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-1 overflow-x-auto">
-        <span className="font-display italic text-xl mr-3 text-accent shrink-0">
+        <Link
+          to="/"
+          className="font-display italic text-xl mr-3 text-accent shrink-0 hover:opacity-75 transition-opacity"
+          aria-label="홈으로"
+        >
           convo<span className="text-ink">·</span>trace
-        </span>
+        </Link>
         {NAV_ITEMS.map((item) => (
           <NavLink
             key={item.to}

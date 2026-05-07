@@ -1,9 +1,11 @@
 import type { Scenario } from '@/lib/scenario'
-import type { SessionMode } from '@/db/schema'
+import type { SessionMode, DialogTurn } from '@/db/schema'
+import { getNickname } from '@/lib/profile'
 
 interface Props {
   scenario: Scenario
   mode: SessionMode
+  partnerName?: string
   onStart: () => void
   onRegenerate: () => void
   onCancel: () => void
@@ -13,11 +15,23 @@ interface Props {
 export function ScenarioPreview({
   scenario,
   mode,
+  partnerName,
   onStart,
   onRegenerate,
   onCancel,
   starting,
 }: Props) {
+  // dialog 라벨 결정
+  // 솔로: user = 닉네임 || '나', partner = aiRole
+  // 페어: user = userRole, partner = partnerName || aiRole
+  const nickname = getNickname()
+  const userLabel =
+    mode === 'solo' ? nickname || '나' : scenario.userRole
+  const partnerLabel =
+    mode === 'pair' && partnerName
+      ? `${partnerName} (${scenario.aiRole})`
+      : scenario.aiRole
+
   return (
     <div className="space-y-6">
       <header>
@@ -69,18 +83,18 @@ export function ScenarioPreview({
 
         <div>
           <p className="text-xs uppercase text-ink-soft tracking-wider mb-2">
-            막혔을 때 따라할 표현
+            예시 대화 흐름
           </p>
-          <ul className="space-y-1.5 bg-bg-soft border border-line rounded-md p-3">
-            {scenario.keyExpressions.map((e, i) => (
-              <li
+          <div className="bg-bg-soft border border-line rounded-md p-4 space-y-3">
+            {scenario.keyExpressions.map((turn, i) => (
+              <DialogRow
                 key={i}
-                className="text-sm text-ink leading-relaxed font-display italic"
-              >
-                "{e}"
-              </li>
+                turn={turn}
+                userLabel={userLabel}
+                partnerLabel={partnerLabel}
+              />
             ))}
-          </ul>
+          </div>
         </div>
 
         <div>
@@ -131,6 +145,40 @@ export function ScenarioPreview({
           취소
         </button>
       </div>
+    </div>
+  )
+}
+
+function DialogRow({
+  turn,
+  userLabel,
+  partnerLabel,
+}: {
+  turn: DialogTurn
+  userLabel: string
+  partnerLabel: string
+}) {
+  const isUser = turn.speaker === 'user'
+  const label = isUser ? userLabel : partnerLabel
+  return (
+    <div
+      className={`pl-3 border-l-2 ${
+        isUser ? 'border-accent' : 'border-line'
+      }`}
+    >
+      <p
+        className={`text-xs font-medium mb-0.5 ${
+          isUser ? 'text-accent' : 'text-ink-soft'
+        }`}
+      >
+        {label}
+      </p>
+      <p className="text-sm font-display italic text-ink leading-relaxed">
+        "{turn.english}"
+      </p>
+      {turn.intentKo && (
+        <p className="text-xs text-ink-soft mt-0.5">→ {turn.intentKo}</p>
+      )}
     </div>
   )
 }
