@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { db, type Session } from '@/db/schema'
+import { db, type Session, type Turn } from '@/db/schema'
 import {
   getActiveSessionId,
   startSession,
@@ -13,6 +13,12 @@ import {
   savePickedExpressions,
   type ExtractedExpression,
 } from '@/lib/extractor'
+import {
+  selectRecallPhrases,
+  checkPhraseUsedInTurns,
+  checkPhraseSeenInScenario,
+} from '@/lib/recall'
+import { reviewPhrase } from '@/lib/srs'
 import { ScenarioSetup, type SetupOpts } from '@/components/ScenarioSetup'
 import { ScenarioPreview } from '@/components/ScenarioPreview'
 import { ChatView } from '@/components/ChatView'
@@ -69,10 +75,18 @@ export function Chat() {
   async function handleGenerate(opts: SetupOpts) {
     setState({ kind: 'generating', opts })
     try {
+      // 회상 phrases 선정 — mastery 낮고 만료된 것 최대 3개
+      const recallPhrases = await selectRecallPhrases(3)
+      const recallHints = recallPhrases.map((p) => ({
+        english: p.expressionEn,
+        intentKo: p.intentKo,
+      }))
+
       const scenario = await generateScenario({
         difficulty: opts.difficulty,
         tags: opts.tags,
         hint: opts.hint,
+        recallPhrases: recallHints,
       })
       setState({ kind: 'preview', scenario, opts })
     } catch (e) {
@@ -108,6 +122,37 @@ export function Chat() {
     }
   }
 
+  /**
+   * 회화 종료 시 phrase mastery 자동 업데이트.
+   * - user turns에 등장 → 'used' (+2)
+   * - 시나리오 어딘가에 등장만 함 → 'seen' (+1)
+   * - 둘 다 X → no change
+   */
+  async function applyMasteryUpdates(
+    session: Session & { id: number },
+    turns: Turn[],
+  ): Promise<void> {
+    const userTurns = turns.filter((t) => t.role === 'user')
+    if (userTurns.length === 0) return
+
+    const allPhrases = await db.phrases.toArray()
+    for (const phrase of allPhrases) {
+      if (phrase.id === undefined) continue
+      // 너무 최근 캡처 (이번 세션 이전 1시간 이내)는 mastery 업데이트 skip
+      // — 같은 회화에서 막 캡처된 phrase가 또 등장했다고 mastery 올리는 건 부자연
+      if (phrase.capturedAt > session.startedAt - 60 * 60 * 1000) continue
+
+      const used = checkPhraseUsedInTurns(phrase, userTurns)
+      const seen = !used && checkPhraseSeenInScenario(phrase, session)
+
+      if (used) {
+        await reviewPhrase(phrase.id, 'used')
+      } else if (seen) {
+        await reviewPhrase(phrase.id, 'seen')
+      }
+    }
+  }
+
   async function handleEndDialogSubmit(
     rating: number | undefined,
     note: string | undefined,
@@ -117,21 +162,29 @@ export function Chat() {
 
     const session = state.session
 
-    // 다이얼로그 닫고 추출 페이지로 전환
     setEndDialogOpen(false)
     setSavingEnd(false)
     setState({ kind: 'extracting', session, rating, note })
 
-    // 추출 시작 (백그라운드에서 await)
     try {
       const turns = await db.turns
         .where('sessionId')
         .equals(session.id)
         .sortBy('createdAt')
+
+      // mastery 자동 업데이트 (병렬로 추출과 함께)
+      const masteryPromise = applyMasteryUpdates(session, turns)
+
       const expressions = await extractFromConversation({
         difficulty: session.difficulty,
         turns: turns.map((t) => ({ role: t.role, content: t.content })),
       })
+
+      // mastery 업데이트 완료 대기 (실패해도 추출 결과는 보여줌)
+      await masteryPromise.catch((e) =>
+        console.warn('[chat] mastery 업데이트 실패:', e),
+      )
+
       setState({
         kind: 'extracted',
         session,
@@ -171,7 +224,6 @@ export function Chat() {
       navigate('/sessions')
     } catch (e) {
       console.warn('[chat] 종료 저장 실패:', e)
-      // 에러 나도 일단 정상 진입
       navigate('/sessions')
     }
   }

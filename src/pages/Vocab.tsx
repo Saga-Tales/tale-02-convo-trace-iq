@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { db, type VocabItem, type PhraseItem } from '@/db/schema'
+import { masteryLabel } from '@/lib/srs'
 
 type Tab = 'phrase' | 'vocab'
 
@@ -98,6 +99,13 @@ function PhraseList({ phrases }: { phrases: PhraseItem[] | null }) {
 
 function PhraseCard({ phrase }: { phrase: PhraseItem }) {
   const date = new Date(phrase.capturedAt)
+  const label = masteryLabel(phrase.mastery)
+  const labelColor =
+    label === '마스터'
+      ? 'text-teal'
+      : label === '익숙해지는 중'
+        ? 'text-pop'
+        : 'text-accent'
   return (
     <article className="border border-line bg-white rounded-2xl p-4 shadow-sm lift">
       <p className="font-display italic text-ink text-base leading-relaxed">
@@ -116,6 +124,10 @@ function PhraseCard({ phrase }: { phrase: PhraseItem }) {
         </span>
         <span>·</span>
         <TypeBadge type={phrase.type} />
+        <span>·</span>
+        <span className={`${labelColor} font-medium`}>
+          {label} {phrase.mastery}/10
+        </span>
         {phrase.source === 'imported' && (
           <>
             <span>·</span>
@@ -164,6 +176,13 @@ function VocabList({ items }: { items: VocabItem[] | null }) {
 
 function VocabCard({ item }: { item: VocabItem }) {
   const date = new Date(item.capturedAt)
+  const label = masteryLabel(item.mastery)
+  const labelColor =
+    label === '마스터'
+      ? 'text-teal'
+      : label === '익숙해지는 중'
+        ? 'text-pop'
+        : 'text-accent'
   return (
     <article className="border border-line bg-white rounded-2xl p-4 shadow-sm lift">
       <div className="flex items-baseline gap-3">
@@ -183,6 +202,10 @@ function VocabCard({ item }: { item: VocabItem }) {
             month: 'short',
             day: 'numeric',
           })}
+        </span>
+        <span>·</span>
+        <span className={`${labelColor} font-medium`}>
+          {label} {item.mastery}/10
         </span>
         {item.source === 'imported' && (
           <>

@@ -64,7 +64,7 @@ npm run build    # dist/ 정적 파일 생성
 - [x] **Day 2**: 시나리오 생성 (Claude Haiku 4.5 + hard-constraint validator) + 솔로/페어 모드 + streaming 회화 + 활성 세션 localStorage 복구 + 종료 다이얼로그(rating·note) + 세션 기록 + 홈 대시보드 + CEFR 9단계 난이도 + 풍부한 시나리오(brief·objectives·keyExpressions·learningGoals)
 - [x] **Day 3**: 캡처 — ko→en 짧은 답변 모달 (자동 phrase 저장, 입력창 채우기) + 단어 lookup 모달 (last assistant turn을 contextSentence로 자동 저장) + 캡처 토스트 + /vocab 페이지(표현·단어 탭) + 복합 unique 인덱스 dedup + 시나리오 dialog 구조(DialogTurn[]: speaker·english·intentKo) + 닉네임 (localStorage) + 카테고리 자유 입력 + 로고 클릭 홈 이동
 - [x] **Day 4**: 회화 종료 후 자동 표현 추출 (extractor.ts + 8-cap validator) + keep/discard UI (ExtractionResults) + ChatView 안에 collapsible 시나리오 패널 (ScenarioPanel, 기본 펼침) + 디자인 리뉴얼 (vibrant pink primary, sky blue pop, rounded-2xl, ✦ 시그니처 도형, gradient cards, lift hover, pop-in animation)
-- [ ] **Day 5**: 회상 (시나리오 생성 시 mastery 낮은 표현 주입) + 홈 대시보드 정교화 + SM-2
+- [x] **Day 5**: 회상 폐쇄 루프 — selectRecallPhrases (mastery 낮고 만료된 phrase 3개) + scenario.ts prompt에 자연스러운 hint로 주입 + 종료 후 자동 mastery 업데이트 (user turns 등장→'used', 시나리오 등장만→'seen', substring keyword match) + SM-2 단순화 변형 (mastery 0-10 + nextReviewAt) + Home 정교화 (스트릭, 회상 예고 카드, mastery 분포 bar) + Vocab phrase/word 카드에 mastery 라벨 표시
 - [ ] **Day 6**: 페어 모드 (QR 시나리오 공유 + 캡처 동기화) + PWA + 백업
 
 ## Tech stack

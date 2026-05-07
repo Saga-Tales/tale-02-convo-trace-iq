@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { db, type Session } from '@/db/schema'
+import { db, type Session, type PhraseItem } from '@/db/schema'
+import {
+  selectRecallPhrases,
+  calculateStreak,
+  calculateMasteryDistribution,
+  type MasteryDistribution,
+} from '@/lib/recall'
 
 interface Stats {
   totalSessions: number
@@ -9,6 +15,9 @@ interface Stats {
   totalVocab: number
   ongoing: Session | null
   recent: Session[]
+  streak: number
+  recallPhrases: PhraseItem[]
+  mastery: MasteryDistribution
 }
 
 export function Home() {
@@ -16,22 +25,31 @@ export function Home() {
 
   useEffect(() => {
     ;(async () => {
-      const [allSessions, totalPhrases, totalVocab] = await Promise.all([
+      const [allSessions, allPhrases, totalVocab, recallPhrases] = await Promise.all([
         db.sessions.orderBy('startedAt').reverse().toArray(),
-        db.phrases.count(),
+        db.phrases.toArray(),
         db.vocabulary.count(),
+        selectRecallPhrases(3),
       ])
       const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
       const thisWeek = allSessions.filter((s) => s.startedAt > weekAgo)
       const ongoing = allSessions.find((s) => s.endedAt === null) ?? null
       const recent = allSessions.filter((s) => s.endedAt !== null).slice(0, 3)
+      const streak = calculateStreak(
+        allSessions.filter((s) => s.endedAt !== null),
+      )
+      const mastery = calculateMasteryDistribution(allPhrases)
+
       setStats({
         totalSessions: allSessions.length,
         thisWeekSessions: thisWeek.length,
-        totalPhrases,
+        totalPhrases: allPhrases.length,
         totalVocab,
         ongoing,
         recent,
+        streak,
+        recallPhrases,
+        mastery,
       })
     })()
   }, [])
@@ -64,32 +82,131 @@ export function Home() {
         </Link>
       )}
 
+      {/* 스트릭 + 이번 주 — 큰 카드 한 줄 */}
+      {stats && stats.totalSessions > 0 && (
+        <section className="grid grid-cols-2 gap-3">
+          <div className="border border-line gradient-card rounded-2xl p-4 lift">
+            <p className="text-xs uppercase text-ink-soft tracking-wider mb-1">
+              스트릭
+            </p>
+            <div className="flex items-baseline gap-1.5">
+              <p className="font-display italic text-4xl text-accent leading-none">
+                {stats.streak}
+              </p>
+              <p className="text-sm text-ink-soft">일</p>
+            </div>
+            <p className="text-xs text-ink-soft mt-1">
+              {stats.streak >= 3 ? '🔥 ' : ''}
+              연속 회화
+            </p>
+          </div>
+          <div className="border border-line gradient-card-teal rounded-2xl p-4 lift">
+            <p className="text-xs uppercase text-ink-soft tracking-wider mb-1">
+              이번 주
+            </p>
+            <div className="flex items-baseline gap-1.5">
+              <p className="font-display italic text-4xl text-teal leading-none">
+                {stats.thisWeekSessions}
+              </p>
+              <p className="text-sm text-ink-soft">번</p>
+            </div>
+            <p className="text-xs text-ink-soft mt-1">회화한 횟수</p>
+          </div>
+        </section>
+      )}
+
+      {/* 회상 예고 — 다음 회화에 등장할 표현 */}
+      {stats && stats.recallPhrases.length > 0 && (
+        <section className="border-2 border-accent-soft bg-white rounded-2xl p-5 lift">
+          <header className="flex items-baseline justify-between mb-1">
+            <h2 className="font-display italic text-lg text-accent">
+              <span className="sig-star">다음 회화에서 만날 표현</span>
+            </h2>
+          </header>
+          <p className="text-xs text-ink-soft mb-3 leading-relaxed">
+            아직 익숙하지 않은 표현. 다음 시나리오에 자연스럽게 녹아들 거예요.
+          </p>
+          <div className="space-y-2">
+            {stats.recallPhrases.map((p) => (
+              <div
+                key={p.id}
+                className="bg-bg-soft rounded-xl p-3 border border-line"
+              >
+                <p className="font-display italic text-sm text-ink leading-relaxed">
+                  "{p.expressionEn}"
+                </p>
+                <p className="text-xs text-ink-soft mt-1 flex items-center gap-2">
+                  <span>→ {p.intentKo}</span>
+                  <span className="text-accent">·</span>
+                  <span className="text-accent">mastery {p.mastery}/10</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 4개 stat — 누적 카운트 */}
       <div className="grid grid-cols-2 gap-3">
         <StatCard
-          label="이번 주"
-          value={stats?.thisWeekSessions ?? '—'}
-          subtitle="회화"
+          label="누적 회화"
+          value={stats?.totalSessions ?? '—'}
+          subtitle="번"
           accent="accent"
         />
         <StatCard
-          label="누적"
-          value={stats?.totalSessions ?? '—'}
-          subtitle="회화"
+          label="박제된 단어"
+          value={stats?.totalVocab ?? '—'}
+          subtitle="개"
           accent="teal"
         />
         <StatCard
-          label="박제된"
+          label="박제된 표현"
           value={stats?.totalPhrases ?? '—'}
-          subtitle="표현"
+          subtitle="개"
           accent="accent"
         />
         <StatCard
-          label="박제된"
-          value={stats?.totalVocab ?? '—'}
-          subtitle="단어"
+          label="마스터한 표현"
+          value={stats?.mastery.mastered ?? '—'}
+          subtitle={
+            stats && stats.mastery.total > 0
+              ? `/ ${stats.mastery.total}`
+              : '개'
+          }
           accent="teal"
         />
       </div>
+
+      {/* Mastery 분포 — 표현이 있을 때만 */}
+      {stats && stats.mastery.total > 0 && (
+        <section className="border border-line bg-white rounded-2xl p-5">
+          <h2 className="font-display italic text-base text-ink mb-3">
+            <span className="sig-star">표현 학습 진행</span>
+          </h2>
+          <MasteryBar dist={stats.mastery} />
+          <div className="grid grid-cols-3 gap-2 mt-3 text-center text-xs">
+            <div>
+              <p className="font-display italic text-lg text-accent">
+                {stats.mastery.fresh}
+              </p>
+              <p className="text-ink-soft">새로 학습</p>
+            </div>
+            <div>
+              <p className="font-display italic text-lg text-pop">
+                {stats.mastery.learning}
+              </p>
+              <p className="text-ink-soft">익숙해지는 중</p>
+            </div>
+            <div>
+              <p className="font-display italic text-lg text-teal">
+                {stats.mastery.mastered}
+              </p>
+              <p className="text-ink-soft">마스터</p>
+            </div>
+          </div>
+        </section>
+      )}
 
       {stats && stats.totalSessions === 0 && (
         <section className="border border-line gradient-card rounded-2xl p-5">
@@ -124,11 +241,11 @@ export function Home() {
 
       <section className="border border-line bg-bg-soft rounded-2xl p-5">
         <h2 className="font-display italic text-lg text-ink mb-3">
-          <span className="sig-star">다음 단계 (Day 5~)</span>
+          <span className="sig-star">다음 단계 (Day 6)</span>
         </h2>
         <ul className="text-sm text-ink-soft space-y-1.5 leading-relaxed">
-          <li>· 다음 시나리오에 mastery 낮은 표현 자연스럽게 등장 (Day 5)</li>
-          <li>· 페어 모드 QR 시나리오 공유 + 캡처 동기화 (Day 6)</li>
+          <li>· 페어 모드 QR 시나리오 공유 + 캡처 동기화</li>
+          <li>· PWA + 오프라인 백업 (export/import)</li>
         </ul>
       </section>
     </div>
@@ -156,6 +273,39 @@ function StatCard({
         {value}
       </p>
       <p className="text-xs text-ink-soft mt-1">{subtitle}</p>
+    </div>
+  )
+}
+
+function MasteryBar({ dist }: { dist: MasteryDistribution }) {
+  if (dist.total === 0) return null
+  const freshPct = (dist.fresh / dist.total) * 100
+  const learningPct = (dist.learning / dist.total) * 100
+  const masteredPct = (dist.mastered / dist.total) * 100
+
+  return (
+    <div className="flex h-3 rounded-full overflow-hidden bg-bg-soft border border-line">
+      {dist.fresh > 0 && (
+        <div
+          className="bg-accent"
+          style={{ width: `${freshPct}%` }}
+          title={`새로 학습: ${dist.fresh}`}
+        />
+      )}
+      {dist.learning > 0 && (
+        <div
+          className="bg-pop"
+          style={{ width: `${learningPct}%` }}
+          title={`익숙해지는 중: ${dist.learning}`}
+        />
+      )}
+      {dist.mastered > 0 && (
+        <div
+          className="bg-teal"
+          style={{ width: `${masteredPct}%` }}
+          title={`마스터: ${dist.mastered}`}
+        />
+      )}
     </div>
   )
 }

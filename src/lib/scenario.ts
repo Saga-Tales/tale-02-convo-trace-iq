@@ -12,6 +12,11 @@ export interface Scenario {
   openingLine: string
 }
 
+export interface RecallPhraseHint {
+  english: string
+  intentKo: string
+}
+
 const SYSTEM_PROMPT = `너는 영어 회화 학습 도구의 시나리오 생성기다.
 사용자가 시나리오를 보면서 회화를 따라할 수 있도록 충분한 가이드를 제공해야 한다.
 
@@ -67,15 +72,26 @@ export async function generateScenario(opts: {
   difficulty: Difficulty
   tags: string[]
   hint: string
+  recallPhrases?: RecallPhraseHint[]
 }): Promise<Scenario> {
   const tagDesc =
     opts.tags.length > 0
       ? opts.tags.map((t) => TAG_KO[t] ?? t).join(', ')
       : '제한 없음'
 
+  const recallSection =
+    opts.recallPhrases && opts.recallPhrases.length > 0
+      ? `\n\n학습 중인 표현 (가능하면 자연스럽게 1-2개를 시나리오 흐름에 녹일 것; 강제 X — 시나리오와 안 맞으면 무시):
+${opts.recallPhrases
+  .map((p, i) => `${i + 1}. "${p.english}" — ${p.intentKo}`)
+  .join('\n')}
+
+위 표현은 keyExpressions의 turn이나 objectives, brief 어디든 자연스럽게 등장시키면 됩니다. 어색하게 끼워넣지 말고 시나리오 흐름이 우선.`
+      : ''
+
   const userPrompt = `난이도: ${opts.difficulty} (${DIFFICULTY_HINT[opts.difficulty]})
 카테고리: ${tagDesc}
-추가 요청: ${opts.hint || '(없음)'}
+추가 요청: ${opts.hint || '(없음)'}${recallSection}
 
 위 조건에 맞는 시나리오 1개를 JSON으로 생성. keyExpressions는 짧은 turn들이 자연스럽게 번갈아 나오는 대화 흐름으로.`
 
