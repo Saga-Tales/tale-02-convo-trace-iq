@@ -80,3 +80,34 @@ export async function callStreaming(
   await stream.finalMessage()
   return accumulated
 }
+
+export interface ConversationMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+/**
+ * Multi-turn 회화 streaming. 회화 상태를 messages 배열로 보존.
+ */
+export async function callConversationStreaming(
+  opts: {
+    system: string
+    messages: ConversationMessage[]
+    maxTokens?: number
+  },
+  onDelta: (accumulated: string) => void,
+): Promise<string> {
+  let accumulated = ''
+  const stream = getClient().messages.stream({
+    model: MODEL,
+    max_tokens: opts.maxTokens ?? 1024,
+    system: opts.system,
+    messages: opts.messages,
+  })
+  stream.on('text', (delta) => {
+    accumulated += delta
+    onDelta(accumulated)
+  })
+  await stream.finalMessage()
+  return accumulated
+}

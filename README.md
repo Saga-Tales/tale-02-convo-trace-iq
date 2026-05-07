@@ -61,10 +61,10 @@ npm run build    # dist/ 정적 파일 생성
 ## 진행 상황
 
 - [x] **Day 1**: 프로젝트 골격 — Vite + React + TypeScript + Tailwind v4 + IndexedDB schema + BYOK + GH Pages 자동 배포 + SPA fallback
-- [ ] **Day 2**: 시나리오 생성 (난이도/카테고리/자유 입력) + 회화 시작/종료 흐름
+- [x] **Day 2**: 시나리오 생성 (Claude Haiku 4.5 + hard-constraint validator) + 솔로/페어 모드 + streaming 회화 + 활성 세션 localStorage 복구 + 종료 다이얼로그(rating·note) + 세션 기록 + 홈 대시보드
 - [ ] **Day 3**: 캡처 (ko→en 짧은 답변 모드 + 단어 lookup + 자동 저장)
 - [ ] **Day 4**: 회화 종료 후 표현 추출 + validator + keep/discard
-- [ ] **Day 5**: 회상 (시나리오 생성 시 mastery 낮은 표현 주입) + 홈 대시보드 + SM-2
+- [ ] **Day 5**: 회상 (시나리오 생성 시 mastery 낮은 표현 주입) + 홈 대시보드 정교화 + SM-2
 - [ ] **Day 6**: 페어 모드 (QR 시나리오 공유 + 캡처 동기화) + PWA + 백업
 
 ## Tech stack
