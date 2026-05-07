@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  /* 컬러 — cream + deep teal + soft yellow highlight */
+  --color-bg: #f7f3ea;
+  --color-bg-soft: #efe9d9;
+  --color-ink: #1a1a1a;
+  --color-ink-soft: #6b6b6b;
+  --color-line: #e0d8c5;
+  --color-accent: #2d6a6f;
+  --color-accent-soft: #d4e6e8;
+  --color-highlight: #ffe8a3;
+  --color-highlight-strong: #f4c640;
+  --color-warn: #c44d3d;
+
+  /* 타이포 — Fraunces (italic display, 시그니처) + Pretendard (한국어 first body) */
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-feature-settings: "tnum";
+}
+
+#root {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 시그니처 — 형광펜 효과. 캡처된 표현/단어에 적용 */
+.highlight {
+  background: linear-gradient(180deg, transparent 60%, var(--color-highlight) 60%);
+  padding: 0 0.1em;
+}
+
+.highlight-strong {
+  background: linear-gradient(180deg, transparent 55%, var(--color-highlight-strong) 55%);
+  padding: 0 0.1em;
+}
