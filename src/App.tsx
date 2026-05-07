@@ -20,10 +20,12 @@ function Nav() {
       <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-1 overflow-x-auto">
         <Link
           to="/"
-          className="font-display italic text-xl mr-3 text-accent shrink-0 hover:opacity-75 transition-opacity"
+          className="font-display italic text-xl mr-3 shrink-0 hover:opacity-80 transition-opacity"
           aria-label="홈으로"
         >
-          convo<span className="text-ink">·</span>trace
+          <span className="text-teal">convo</span>
+          <span className="text-ink">·</span>
+          <span className="text-accent">trace</span>
         </Link>
         {NAV_ITEMS.map((item) => (
           <NavLink
@@ -31,7 +33,7 @@ function Nav() {
             to={item.to}
             end={item.end}
             className={({ isActive }) =>
-              `px-3 py-1 rounded-md text-sm whitespace-nowrap transition-colors ${
+              `px-3 py-1 rounded-full text-sm whitespace-nowrap transition-colors ${
                 isActive
                   ? 'bg-accent text-bg'
                   : 'text-ink-soft hover:text-ink hover:bg-bg-soft'

@@ -1,19 +1,37 @@
 @import "tailwindcss";
 
 @theme {
-  /* 컬러 — cream + deep teal + soft yellow highlight */
-  --color-bg: #f7f3ea;
-  --color-bg-soft: #efe9d9;
+  /* Background — warm cream */
+  --color-bg: #fff8ee;
+  --color-bg-soft: #fef0d9;
+  --color-bg-warm: #fff4e0;
+
+  /* Ink */
   --color-ink: #1a1a1a;
   --color-ink-soft: #6b6b6b;
-  --color-line: #e0d8c5;
-  --color-accent: #2d6a6f;
-  --color-accent-soft: #d4e6e8;
-  --color-highlight: #ffe8a3;
-  --color-highlight-strong: #f4c640;
-  --color-warn: #c44d3d;
+  --color-line: #e8dcc4;
 
-  /* 타이포 — Fraunces (italic display, 시그니처) + Pretendard (한국어 first body) */
+  /* PRIMARY — vibrant pink */
+  --color-accent: #ec4899;
+  --color-accent-soft: #fde4ee;
+  --color-accent-deep: #be185d;
+
+  /* SECONDARY — deep teal (sibling 시그니처 유지) */
+  --color-teal: #14787e;
+  --color-teal-soft: #cef0f0;
+
+  /* POP — sky blue */
+  --color-pop: #38bdf8;
+  --color-pop-soft: #e0f2fe;
+
+  /* HIGHLIGHTER — 더 vibrant yellow */
+  --color-highlight: #fff070;
+  --color-highlight-strong: #fbbf24;
+
+  /* WARN */
+  --color-warn: #ef4444;
+
+  /* Fonts */
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;
   --font-body: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;
 }
@@ -38,7 +56,7 @@ body {
   flex-direction: column;
 }
 
-/* 시그니처 — 형광펜 효과. 캡처된 표현/단어에 적용 */
+/* 형광펜 시그니처 — 더 vibrant */
 .highlight {
   background: linear-gradient(180deg, transparent 60%, var(--color-highlight) 60%);
   padding: 0 0.1em;
@@ -47,4 +65,65 @@ body {
 .highlight-strong {
   background: linear-gradient(180deg, transparent 55%, var(--color-highlight-strong) 55%);
   padding: 0 0.1em;
+}
+
+.highlight-pink {
+  background: linear-gradient(180deg, transparent 60%, var(--color-accent-soft) 60%);
+  padding: 0 0.1em;
+}
+
+/* 카드 그라데이션 (subtle) */
+.gradient-card {
+  background: linear-gradient(135deg, #ffffff 0%, var(--color-accent-soft) 100%);
+}
+
+.gradient-card-teal {
+  background: linear-gradient(135deg, #ffffff 0%, var(--color-teal-soft) 100%);
+}
+
+.gradient-card-warm {
+  background: linear-gradient(135deg, #ffffff 0%, var(--color-bg-warm) 100%);
+}
+
+/* 발랄한 motion */
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes pop-in {
+  0% { transform: scale(0.95); opacity: 0; }
+  60% { transform: scale(1.02); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-wiggle:hover {
+  animation: wiggle 0.4s ease-in-out;
+}
+
+.animate-pop-in {
+  animation: pop-in 0.3s ease-out;
+}
+
+/* 호버 lift */
+.lift {
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+.lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.1);
+}
+
+/* 시그니처 도형 */
+.sig-star::before {
+  content: "✦";
+  margin-right: 0.4em;
+  color: var(--color-accent);
+  font-style: normal;
 }

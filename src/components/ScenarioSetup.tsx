@@ -44,9 +44,7 @@ export function ScenarioSetup({ onGenerate, loading }: Props) {
   function addCustomTag() {
     const t = customInput.trim()
     if (!t) return
-    if (!tags.includes(t)) {
-      setTags((prev) => [...prev, t])
-    }
+    if (!tags.includes(t)) setTags((prev) => [...prev, t])
     setCustomInput('')
   }
 
@@ -75,13 +73,15 @@ export function ScenarioSetup({ onGenerate, loading }: Props) {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="font-display italic text-4xl text-ink">새 회화</h1>
+        <h1 className="font-display italic text-4xl text-accent">
+          <span className="sig-star">새 회화</span>
+        </h1>
         <p className="text-ink-soft text-sm mt-1">
           시나리오를 설정하면 Claude가 영어 회화 상황을 만들어줘요.
         </p>
       </header>
 
-      <section className="border border-line bg-white rounded-xl p-5 shadow-sm space-y-5">
+      <section className="border border-line bg-white rounded-2xl p-5 shadow-sm space-y-5">
         <Field label="모드">
           <ChoiceRow>
             <Choice
@@ -106,7 +106,7 @@ export function ScenarioSetup({ onGenerate, loading }: Props) {
               value={partnerName}
               onChange={(e) => setPartnerName(e.target.value)}
               placeholder="예: 아이큐"
-              className="w-full px-3 py-2 border border-line rounded-md bg-bg-soft focus:outline-none focus:border-accent"
+              className="w-full px-3 py-2 border border-line rounded-xl bg-bg-soft focus:outline-none focus:border-accent transition-colors"
             />
           </Field>
         )}
@@ -145,7 +145,6 @@ export function ScenarioSetup({ onGenerate, loading }: Props) {
             ))}
           </ChoiceRow>
 
-          {/* 자유 입력 */}
           <div className="flex gap-2 mt-2.5">
             <input
               type="text"
@@ -153,25 +152,24 @@ export function ScenarioSetup({ onGenerate, loading }: Props) {
               onChange={(e) => setCustomInput(e.target.value)}
               onKeyDown={handleCustomKeyDown}
               placeholder="기타 카테고리 (Enter 추가)"
-              className="flex-1 px-2.5 py-1.5 border border-line rounded-md bg-bg-soft text-sm focus:outline-none focus:border-accent"
+              className="flex-1 px-2.5 py-1.5 border border-line rounded-xl bg-bg-soft text-sm focus:outline-none focus:border-accent transition-colors"
             />
             <button
               type="button"
               onClick={addCustomTag}
               disabled={!customInput.trim()}
-              className="px-3 py-1.5 border border-line text-ink-soft rounded-md text-sm hover:bg-bg-soft disabled:opacity-40"
+              className="px-3 py-1.5 border border-line text-ink-soft rounded-xl text-sm hover:bg-bg-soft disabled:opacity-40"
             >
               추가
             </button>
           </div>
 
-          {/* 추가된 custom tags */}
           {customTags.length > 0 && (
             <div className="flex gap-1.5 mt-2 flex-wrap">
               {customTags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-accent text-bg rounded-md text-xs"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-accent text-bg rounded-full text-xs"
                 >
                   {tag}
                   <button
@@ -200,16 +198,16 @@ export function ScenarioSetup({ onGenerate, loading }: Props) {
             onChange={(e) => setHint(e.target.value)}
             placeholder="예: VC 미팅 같은 분위기, 공항 체크인, 친구와 카페에서..."
             rows={2}
-            className="w-full px-3 py-2 border border-line rounded-md bg-bg-soft focus:outline-none focus:border-accent resize-none text-sm"
+            className="w-full px-3 py-2 border border-line rounded-xl bg-bg-soft focus:outline-none focus:border-accent resize-none text-sm transition-colors"
           />
         </Field>
 
         <button
           onClick={handleSubmit}
           disabled={!canSubmit}
-          className="w-full px-4 py-2.5 bg-accent text-bg rounded-md font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+          className="w-full px-4 py-3 bg-accent text-bg rounded-2xl font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity shadow-sm"
         >
-          {loading ? '시나리오 생성 중...' : '시나리오 생성'}
+          {loading ? '시나리오 생성 중...' : '시나리오 생성 ✦'}
         </button>
       </section>
     </div>
@@ -255,9 +253,9 @@ function Choice({
     <button
       type="button"
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-md text-sm border transition-colors ${
+      className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
         active
-          ? 'bg-accent text-bg border-accent'
+          ? 'bg-accent text-bg border-accent shadow-sm'
           : 'border-line text-ink-soft hover:bg-bg-soft hover:text-ink'
       }`}
     >

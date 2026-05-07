@@ -4,6 +4,7 @@ import { streamReply } from '@/lib/conversation'
 import type { ConversationMessage } from '@/lib/anthropic'
 import { AskKoreanModal } from './AskKoreanModal'
 import { WordLookupModal } from './WordLookupModal'
+import { ScenarioPanel } from './ScenarioPanel'
 
 interface Props {
   session: Session & { id: number }
@@ -118,16 +119,21 @@ export function ChatView({ session, onEnd }: Props) {
         </div>
         <button
           onClick={onEnd}
-          className="px-3 py-1.5 border border-line text-ink-soft rounded-md text-sm hover:bg-bg-soft shrink-0"
+          className="px-3 py-1.5 border border-line text-ink-soft rounded-full text-sm hover:bg-bg-soft hover:border-accent shrink-0 transition-colors"
         >
           회화 종료
         </button>
       </div>
 
+      {/* 시나리오 패널 (collapsible, 기본 펼침) */}
+      <div className="mb-3 shrink-0">
+        <ScenarioPanel session={session} />
+      </div>
+
       {/* turns 영역 */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto bg-white border border-line rounded-xl p-4 mb-3 space-y-3"
+        className="flex-1 overflow-y-auto bg-white border border-line rounded-2xl p-4 mb-3 space-y-3 min-h-[200px]"
       >
         {turns.length === 0 && !streaming && (
           <p className="text-xs text-ink-soft text-center py-8">
@@ -157,13 +163,13 @@ export function ChatView({ session, onEnd }: Props) {
       <div className="flex gap-1.5 mb-2">
         <button
           onClick={() => setAskKoreanOpen(true)}
-          className="px-3 py-1.5 border border-line text-ink-soft rounded-md text-xs hover:bg-bg-soft hover:text-accent transition-colors"
+          className="px-3 py-1.5 border border-line text-ink-soft rounded-full text-xs hover:bg-accent-soft hover:border-accent hover:text-accent transition-colors"
         >
           한국어로?
         </button>
         <button
           onClick={() => setWordLookupOpen(true)}
-          className="px-3 py-1.5 border border-line text-ink-soft rounded-md text-xs hover:bg-bg-soft hover:text-accent transition-colors"
+          className="px-3 py-1.5 border border-line text-ink-soft rounded-full text-xs hover:bg-teal-soft hover:border-teal hover:text-teal transition-colors"
         >
           단어 뜻
         </button>
@@ -178,12 +184,12 @@ export function ChatView({ session, onEnd }: Props) {
           placeholder="영어로 답하세요. (Enter 전송, Shift+Enter 줄바꿈)"
           rows={2}
           disabled={streaming}
-          className="flex-1 px-3 py-2 border border-line rounded-md bg-white focus:outline-none focus:border-accent resize-none text-sm disabled:opacity-60"
+          className="flex-1 px-3 py-2 border border-line rounded-2xl bg-white focus:outline-none focus:border-accent resize-none text-sm disabled:opacity-60"
         />
         <button
           onClick={handleSend}
           disabled={streaming || !input.trim()}
-          className="px-4 bg-accent text-bg rounded-md text-sm hover:opacity-90 disabled:opacity-40 transition-opacity"
+          className="px-5 bg-accent text-bg rounded-2xl text-sm hover:opacity-90 disabled:opacity-40 transition-opacity font-medium"
         >
           전송
         </button>
@@ -191,7 +197,7 @@ export function ChatView({ session, onEnd }: Props) {
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-ink text-bg rounded-full text-sm shadow-lg z-30">
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2 bg-ink text-bg rounded-full text-sm shadow-lg z-30 animate-pop-in">
           {toast}
         </div>
       )}
@@ -233,13 +239,13 @@ function TurnBubble({ turn, streaming }: { turn: Turn; streaming?: boolean }) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[80%] px-3.5 py-2 rounded-lg text-sm leading-relaxed whitespace-pre-wrap ${
-          isUser ? 'bg-accent-soft text-ink' : 'bg-bg-soft text-ink'
+        className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+          isUser ? 'bg-accent text-bg' : 'bg-bg-soft text-ink'
         }`}
       >
         {turn.content}
         {streaming && (
-          <span className="ml-1 animate-pulse text-accent font-display">▋</span>
+          <span className="ml-1 animate-pulse">▋</span>
         )}
       </div>
     </div>

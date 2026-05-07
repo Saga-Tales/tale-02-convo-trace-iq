@@ -17,7 +17,10 @@ export function WordLookupModal({
   onCapture,
 }: Props) {
   const [term, setTerm] = useState('')
-  const [meaning, setMeaning] = useState<string | null>(null)
+  const [result, setResult] = useState<{
+    meaningKo: string
+    alreadyKnew: boolean
+  } | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -31,10 +34,13 @@ export function WordLookupModal({
     try {
       const res = await lookupWord({
         term: t,
-        contextSentence: lastAssistantContent,
         sessionOrigin: sessionId,
+        contextSentence: lastAssistantContent,
       })
-      setMeaning(res.meaning)
+      setResult({
+        meaningKo: res.meaning,
+        alreadyKnew: res.alreadyKnew,
+      })
       onCapture(res.alreadyKnew)
     } catch (e) {
       setError(e instanceof Error ? e.message : '실패')
@@ -45,31 +51,27 @@ export function WordLookupModal({
 
   function handleClose() {
     setTerm('')
-    setMeaning(null)
+    setResult(null)
     setError(null)
     onClose()
   }
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-      <div className="bg-bg border border-line rounded-xl p-5 max-w-md w-full shadow-lg space-y-4">
+      <div className="bg-bg border border-line rounded-2xl p-5 max-w-md w-full shadow-xl space-y-4 animate-pop-in">
         <div>
-          <h2 className="font-display italic text-2xl text-ink">단어 뜻</h2>
+          <h2 className="font-display italic text-2xl text-teal">
+            <span className="sig-star">단어 뜻</span>
+          </h2>
           <p className="text-sm text-ink-soft mt-1">
-            모르는 영어 단어 또는 짧은 표현을 적어주세요. 한국어 짧은 정의로 답해드려요.
+            모르는 영어 단어를 입력하면 한국어 뜻과 예문을 알려드려요.
+            {lastAssistantContent && (
+              <span className="block mt-1.5 text-xs">
+                회화 맥락이 자동 첨부됩니다.
+              </span>
+            )}
           </p>
         </div>
-
-        {lastAssistantContent && (
-          <div className="border border-line bg-bg-soft rounded-md p-3">
-            <p className="text-xs uppercase text-ink-soft tracking-wider mb-1">
-              방금 AI가 한 말
-            </p>
-            <p className="text-sm text-ink leading-relaxed line-clamp-3">
-              {lastAssistantContent}
-            </p>
-          </div>
-        )}
 
         <input
           type="text"
@@ -78,55 +80,58 @@ export function WordLookupModal({
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
               e.preventDefault()
-              void handleLookup()
+              handleLookup()
             }
           }}
-          placeholder="예: runway, cut to the chase"
+          placeholder="예: headwind"
           autoFocus
           disabled={loading}
-          className="w-full px-3 py-2 border border-line rounded-md bg-white focus:outline-none focus:border-accent text-sm disabled:opacity-60"
+          className="w-full px-3 py-2 border border-line rounded-xl bg-white focus:outline-none focus:border-teal text-sm disabled:opacity-60"
         />
 
-        {!meaning && (
+        {!result && (
           <button
             onClick={handleLookup}
             disabled={loading || !term.trim()}
-            className="w-full px-4 py-2 bg-accent text-bg rounded-md text-sm hover:opacity-90 disabled:opacity-40"
+            className="w-full px-4 py-2.5 bg-teal text-bg rounded-2xl text-sm hover:opacity-90 disabled:opacity-40 transition-opacity font-medium"
           >
-            {loading ? '찾는 중...' : '뜻 보기'}
+            {loading ? '찾는 중...' : '뜻 찾기 ✦'}
           </button>
         )}
 
         {error && (
-          <div className="border border-warn bg-warn/10 rounded-md p-3 text-xs text-warn">
+          <div className="border border-warn bg-warn/10 rounded-xl p-3 text-xs text-warn">
             {error}
           </div>
         )}
 
-        {meaning && (
-          <div className="space-y-3">
-            <div className="border border-accent bg-accent-soft rounded-md p-4">
-              <p className="text-xs uppercase text-ink-soft tracking-wider mb-1">
-                {term}
-              </p>
-              <p className="text-ink leading-relaxed">{meaning}</p>
+        {result && (
+          <div className="border-2 border-teal gradient-card-teal rounded-2xl p-4 space-y-2">
+            <div className="flex items-baseline gap-3">
+              <p className="font-display italic text-xl text-teal">{term}</p>
+              <p className="text-sm text-ink">{result.meaningKo}</p>
             </div>
-            <p className="text-xs text-accent">🔖 단어가 자동 저장됐어요.</p>
-            <button
-              onClick={() => {
-                setMeaning(null)
-                setTerm('')
-              }}
-              className="w-full px-4 py-2 border border-line text-ink-soft rounded-md text-sm hover:bg-bg-soft"
-            >
-              다른 단어 찾기
-            </button>
+            <p className="text-xs text-teal font-medium pt-1">
+              {result.alreadyKnew ? '🔖 이미 저장된 단어' : '🔖 단어가 저장됐어요'}
+            </p>
           </div>
+        )}
+
+        {result && (
+          <button
+            onClick={() => {
+              setResult(null)
+              setTerm('')
+            }}
+            className="w-full px-4 py-2 border border-line text-ink-soft rounded-2xl text-sm hover:bg-bg-soft"
+          >
+            다른 단어 찾기
+          </button>
         )}
 
         <button
           onClick={handleClose}
-          className="w-full px-4 py-2 border border-line text-ink-soft rounded-md text-sm hover:bg-bg-soft"
+          className="w-full px-4 py-2 border border-line text-ink-soft rounded-2xl text-sm hover:bg-bg-soft"
         >
           닫기
         </button>

@@ -17,9 +17,10 @@ export function AskKoreanModal({
   onUseInChat,
 }: Props) {
   const [korean, setKorean] = useState('')
-  const [result, setResult] = useState<{ english: string; literal: string } | null>(
-    null,
-  )
+  const [result, setResult] = useState<{
+    english: string
+    literal: string
+  } | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -59,9 +60,11 @@ export function AskKoreanModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-      <div className="bg-bg border border-line rounded-xl p-5 max-w-md w-full shadow-lg space-y-4">
+      <div className="bg-bg border border-line rounded-2xl p-5 max-w-md w-full shadow-xl space-y-4 animate-pop-in">
         <div>
-          <h2 className="font-display italic text-2xl text-ink">한국어로?</h2>
+          <h2 className="font-display italic text-2xl text-accent">
+            <span className="sig-star">한국어로?</span>
+          </h2>
           <p className="text-sm text-ink-soft mt-1">
             표현하고 싶은 의도를 한국어로 적어주세요. 자연스러운 영어 한 문장으로 바꿔드려요.
           </p>
@@ -74,40 +77,40 @@ export function AskKoreanModal({
           rows={2}
           autoFocus
           disabled={loading}
-          className="w-full px-3 py-2 border border-line rounded-md bg-white focus:outline-none focus:border-accent resize-none text-sm disabled:opacity-60"
+          className="w-full px-3 py-2 border border-line rounded-xl bg-white focus:outline-none focus:border-accent resize-none text-sm disabled:opacity-60"
         />
 
         {!result && (
           <button
             onClick={handleAsk}
             disabled={loading || !korean.trim()}
-            className="w-full px-4 py-2 bg-accent text-bg rounded-md text-sm hover:opacity-90 disabled:opacity-40 transition-opacity"
+            className="w-full px-4 py-2.5 bg-accent text-bg rounded-2xl text-sm hover:opacity-90 disabled:opacity-40 transition-opacity font-medium"
           >
-            {loading ? '생각 중...' : '영어로 어떻게 말해?'}
+            {loading ? '생각 중...' : '영어로 어떻게 말해? ✦'}
           </button>
         )}
 
         {error && (
-          <div className="border border-warn bg-warn/10 rounded-md p-3 text-xs text-warn">
+          <div className="border border-warn bg-warn/10 rounded-xl p-3 text-xs text-warn">
             {error}
           </div>
         )}
 
         {result && (
           <div className="space-y-3">
-            <div className="border border-accent bg-accent-soft rounded-md p-4 space-y-2">
+            <div className="border-2 border-accent gradient-card rounded-2xl p-4 space-y-2">
               <p className="font-display italic text-lg text-ink leading-relaxed">
                 "{result.english}"
               </p>
-              <p className="text-xs text-ink-soft border-t border-line pt-2">
+              <p className="text-xs text-ink-soft border-t border-accent-soft pt-2">
                 직역: {result.literal}
               </p>
             </div>
-            <p className="text-xs text-accent">🔖 표현이 자동 저장됐어요.</p>
+            <p className="text-xs text-accent font-medium">🔖 표현이 자동 저장됐어요.</p>
             <div className="flex gap-2">
               <button
                 onClick={handleUse}
-                className="flex-1 px-4 py-2 bg-accent text-bg rounded-md text-sm hover:opacity-90"
+                className="flex-1 px-4 py-2.5 bg-accent text-bg rounded-2xl text-sm hover:opacity-90 font-medium"
               >
                 회화에 이대로 보내기
               </button>
@@ -116,7 +119,7 @@ export function AskKoreanModal({
                   setResult(null)
                   setKorean('')
                 }}
-                className="px-4 py-2 border border-line text-ink-soft rounded-md text-sm hover:bg-bg-soft"
+                className="px-4 py-2.5 border border-line text-ink-soft rounded-2xl text-sm hover:bg-bg-soft"
               >
                 다시 묻기
               </button>
@@ -126,7 +129,7 @@ export function AskKoreanModal({
 
         <button
           onClick={handleClose}
-          className="w-full px-4 py-2 border border-line text-ink-soft rounded-md text-sm hover:bg-bg-soft"
+          className="w-full px-4 py-2 border border-line text-ink-soft rounded-2xl text-sm hover:bg-bg-soft"
         >
           닫기
         </button>

@@ -1,4 +1,5 @@
 import type { Session } from '@/db/schema'
+import { ScenarioPanel } from './ScenarioPanel'
 
 interface Props {
   session: Session & { id: number }
@@ -7,41 +8,32 @@ interface Props {
 
 export function PairSessionView({ session, onEnd }: Props) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <header>
-        <h1 className="font-display italic text-4xl text-ink">진행 중</h1>
+        <h1 className="font-display italic text-4xl text-accent">
+          <span className="sig-star">진행 중</span>
+        </h1>
         <p className="text-ink-soft text-sm mt-1">
-          페어 회화 — 직접 음성으로 대화하세요. 끝나면 종료를 눌러요.
+          페어 회화 — 직접 음성으로 대화하세요. 시나리오 가이드를 시시각각 참고할 수 있어요.
         </p>
       </header>
 
-      <section className="border border-line bg-white rounded-xl p-5 shadow-sm space-y-4">
-        <h2 className="font-display text-2xl text-accent">{session.scenarioTitle}</h2>
-        {session.partnerName && (
-          <p className="text-sm">
-            <span className="text-ink-soft">파트너: </span>
-            <span className="text-ink">{session.partnerName}</span>
-          </p>
-        )}
-        <p className="text-ink leading-relaxed">{session.scenarioBrief}</p>
-        <p className="text-xs text-ink-soft">
-          {session.tags.join(' · ')} · {session.difficulty}
-        </p>
-      </section>
+      <ScenarioPanel session={session} />
 
-      <section className="border border-line bg-bg-soft rounded-xl p-5">
+      <section className="border border-line gradient-card-warm rounded-2xl p-5">
         <p className="text-sm text-ink-soft leading-relaxed">
-          Day 3부터 — 회화 중에 모르는 단어/표현을 빠르게 캡처할 수 있게 됩니다.
-          지금은 시나리오만 표시돼요.
+          회화 중에 모르는 단어/표현이 나오면 아래 버튼으로 빠르게 박제할 수 있어요.
         </p>
       </section>
 
-      <button
-        onClick={onEnd}
-        className="w-full px-4 py-2.5 border border-line text-ink-soft rounded-md hover:bg-bg-soft transition-colors"
-      >
-        회화 종료
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={onEnd}
+          className="flex-1 px-4 py-2.5 border border-line text-ink-soft rounded-2xl hover:bg-bg-soft hover:border-accent transition-colors"
+        >
+          회화 종료
+        </button>
+      </div>
     </div>
   )
 }

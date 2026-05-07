@@ -21,12 +21,8 @@ export function ScenarioPreview({
   onCancel,
   starting,
 }: Props) {
-  // dialog 라벨 결정
-  // 솔로: user = 닉네임 || '나', partner = aiRole
-  // 페어: user = userRole, partner = partnerName || aiRole
   const nickname = getNickname()
-  const userLabel =
-    mode === 'solo' ? nickname || '나' : scenario.userRole
+  const userLabel = mode === 'solo' ? nickname || '나' : scenario.userRole
   const partnerLabel =
     mode === 'pair' && partnerName
       ? `${partnerName} (${scenario.aiRole})`
@@ -35,15 +31,19 @@ export function ScenarioPreview({
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="font-display italic text-4xl text-ink">시나리오</h1>
+        <h1 className="font-display italic text-4xl text-accent">
+          <span className="sig-star">시나리오</span>
+        </h1>
         <p className="text-ink-soft text-sm mt-1">
           마음에 들면 시작, 다른 시나리오를 받고 싶으면 다시 생성하세요.
         </p>
       </header>
 
-      <section className="border border-line bg-white rounded-xl p-5 shadow-sm space-y-5">
+      <section className="border border-line bg-white rounded-2xl p-5 shadow-sm space-y-5">
         <div>
-          <h2 className="font-display text-2xl text-accent">{scenario.title}</h2>
+          <h2 className="font-display italic text-2xl text-accent">
+            {scenario.title}
+          </h2>
         </div>
 
         <p className="text-ink leading-relaxed whitespace-pre-line">
@@ -71,7 +71,10 @@ export function ScenarioPreview({
           </p>
           <ol className="space-y-1.5 list-none">
             {scenario.objectives.map((o, i) => (
-              <li key={i} className="text-sm text-ink flex gap-2.5 leading-relaxed">
+              <li
+                key={i}
+                className="text-sm text-ink flex gap-2.5 leading-relaxed"
+              >
                 <span className="font-display italic text-accent shrink-0">
                   {i + 1}.
                 </span>
@@ -85,7 +88,7 @@ export function ScenarioPreview({
           <p className="text-xs uppercase text-ink-soft tracking-wider mb-2">
             예시 대화 흐름
           </p>
-          <div className="bg-bg-soft border border-line rounded-md p-4 space-y-3">
+          <div className="bg-bg-soft border border-line rounded-xl p-4 space-y-3">
             {scenario.keyExpressions.map((turn, i) => (
               <DialogRow
                 key={i}
@@ -126,21 +129,21 @@ export function ScenarioPreview({
         <button
           onClick={onStart}
           disabled={starting}
-          className="flex-1 px-4 py-2.5 bg-accent text-bg rounded-md font-medium hover:opacity-90 disabled:opacity-40 transition-opacity"
+          className="flex-1 px-4 py-3 bg-accent text-bg rounded-2xl font-medium hover:opacity-90 disabled:opacity-40 transition-opacity shadow-sm"
         >
-          {starting ? '시작 중...' : '시작'}
+          {starting ? '시작 중...' : '시작 ✦'}
         </button>
         <button
           onClick={onRegenerate}
           disabled={starting}
-          className="px-4 py-2.5 border border-line text-ink-soft rounded-md hover:bg-bg-soft transition-colors disabled:opacity-40 text-sm"
+          className="px-4 py-3 border border-line text-ink-soft rounded-2xl hover:bg-bg-soft hover:border-accent transition-colors disabled:opacity-40 text-sm"
         >
           다시 생성
         </button>
         <button
           onClick={onCancel}
           disabled={starting}
-          className="px-4 py-2.5 border border-line text-ink-soft rounded-md hover:bg-bg-soft transition-colors disabled:opacity-40 text-sm"
+          className="px-4 py-3 border border-line text-ink-soft rounded-2xl hover:bg-bg-soft transition-colors disabled:opacity-40 text-sm"
         >
           취소
         </button>

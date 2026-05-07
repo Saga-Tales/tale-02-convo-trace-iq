@@ -38,13 +38,14 @@ export function Settings() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="font-display italic text-4xl text-ink">설정</h1>
+        <h1 className="font-display italic text-4xl text-accent">
+          <span className="sig-star">설정</span>
+        </h1>
       </header>
 
-      {/* 닉네임 */}
-      <section className="border border-line bg-white rounded-xl p-5 shadow-sm space-y-3">
+      <section className="border border-line bg-white rounded-2xl p-5 shadow-sm space-y-3">
         <div>
-          <h2 className="font-display text-lg text-ink mb-1">닉네임</h2>
+          <h2 className="font-display italic text-lg text-ink mb-1">닉네임</h2>
           <p className="text-xs text-ink-soft">
             시나리오의 예시 대화 흐름에서 너의 차례 라벨로 표시돼요.
           </p>
@@ -55,24 +56,23 @@ export function Settings() {
             value={nickname}
             onChange={(e) => setNicknameState(e.target.value)}
             placeholder="예: 아이큐"
-            className="flex-1 px-3 py-2 border border-line rounded-md bg-bg-soft text-ink focus:outline-none focus:border-accent transition-colors"
+            className="flex-1 px-3 py-2 border border-line rounded-xl bg-bg-soft text-ink focus:outline-none focus:border-accent transition-colors"
           />
           <button
             onClick={handleSaveNickname}
-            className="px-4 py-2 bg-accent text-bg rounded-md text-sm hover:opacity-90 transition-opacity"
+            className="px-4 py-2 bg-accent text-bg rounded-xl text-sm hover:opacity-90 transition-opacity"
           >
             저장
           </button>
-          {nicknameSaved && (
-            <span className="text-sm text-accent">✓</span>
-          )}
+          {nicknameSaved && <span className="text-sm text-accent">✓</span>}
         </div>
       </section>
 
-      {/* API 키 */}
-      <section className="border border-line bg-white rounded-xl p-5 shadow-sm space-y-4">
+      <section className="border border-line bg-white rounded-2xl p-5 shadow-sm space-y-4">
         <div>
-          <h2 className="font-display text-lg text-ink mb-1">Anthropic API 키</h2>
+          <h2 className="font-display italic text-lg text-ink mb-1">
+            Anthropic API 키
+          </h2>
           <p className="text-xs text-ink-soft">
             키는 이 브라우저에만 저장돼요. Claude Haiku 4.5로 시나리오 생성 + 회화 진행.
           </p>
@@ -101,7 +101,7 @@ export function Settings() {
             value={key}
             onChange={(e) => setKey(e.target.value)}
             placeholder="sk-ant-..."
-            className="w-full px-3 py-2 border border-line rounded-md bg-bg-soft text-ink focus:outline-none focus:border-accent transition-colors"
+            className="w-full px-3 py-2 border border-line rounded-xl bg-bg-soft text-ink focus:outline-none focus:border-accent transition-colors"
           />
         </div>
 
@@ -109,14 +109,14 @@ export function Settings() {
           <button
             onClick={handleSaveKey}
             disabled={!key.trim()}
-            className="px-4 py-2 bg-accent text-bg rounded-md text-sm hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+            className="px-4 py-2 bg-accent text-bg rounded-xl text-sm hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
           >
             저장
           </button>
           {existing && (
             <button
               onClick={handleClearKey}
-              className="px-4 py-2 border border-line text-ink-soft rounded-md text-sm hover:bg-bg-soft transition-colors"
+              className="px-4 py-2 border border-line text-ink-soft rounded-xl text-sm hover:bg-bg-soft transition-colors"
             >
               삭제
             </button>
@@ -127,8 +127,10 @@ export function Settings() {
         </div>
       </section>
 
-      <section className="border border-line bg-white rounded-xl p-5 shadow-sm">
-        <h2 className="font-display text-lg text-ink mb-2">개인정보</h2>
+      <section className="border border-line gradient-card-warm rounded-2xl p-5">
+        <h2 className="font-display italic text-lg text-ink mb-2">
+          개인정보
+        </h2>
         <p className="text-sm text-ink-soft leading-relaxed">
           모든 데이터(API 키, 닉네임, 회화 기록, 단어/표현)는 이 브라우저에만 저장돼요.
           백엔드 서버 없음. 회화 메시지는 응답을 받기 위해 Anthropic API로 일시

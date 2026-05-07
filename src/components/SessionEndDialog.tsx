@@ -19,22 +19,24 @@ export function SessionEndDialog({ open, onCancel, onSubmit, saving }: Props) {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-      <div className="bg-bg border border-line rounded-xl p-5 max-w-md w-full shadow-lg space-y-4">
-        <h2 className="font-display italic text-2xl text-ink">회화 종료</h2>
+      <div className="bg-bg border border-line rounded-2xl p-5 max-w-md w-full shadow-xl space-y-4 animate-pop-in">
+        <h2 className="font-display italic text-2xl text-ink">
+          <span className="sig-star">회화 종료</span>
+        </h2>
         <p className="text-sm text-ink-soft">
           평점과 짧은 메모를 남기면 나중에 돌아볼 때 도움이 돼요. 둘 다 선택입니다.
         </p>
 
         <div>
           <label className="text-sm font-medium text-ink block mb-2">평점</label>
-          <div className="flex gap-1">
+          <div className="flex gap-1.5">
             {[1, 2, 3, 4, 5].map((n) => (
               <button
                 key={n}
                 onClick={() => setRating(rating === n ? 0 : n)}
-                className={`w-10 h-10 rounded-md border transition-colors text-sm ${
+                className={`w-11 h-11 rounded-2xl border-2 transition-all text-sm ${
                   n <= rating
-                    ? 'bg-highlight border-highlight-strong text-ink font-medium'
+                    ? 'bg-highlight border-highlight-strong text-ink font-bold scale-110'
                     : 'border-line text-ink-soft hover:bg-bg-soft'
                 }`}
               >
@@ -61,7 +63,7 @@ export function SessionEndDialog({ open, onCancel, onSubmit, saving }: Props) {
             onChange={(e) => setNote(e.target.value)}
             placeholder="기억나는 표현, 어려웠던 부분, 한 마디..."
             rows={3}
-            className="w-full px-3 py-2 border border-line rounded-md bg-white focus:outline-none focus:border-accent resize-none text-sm"
+            className="w-full px-3 py-2 border border-line rounded-xl bg-white focus:outline-none focus:border-accent resize-none text-sm"
           />
         </div>
 
@@ -69,14 +71,14 @@ export function SessionEndDialog({ open, onCancel, onSubmit, saving }: Props) {
           <button
             onClick={handleSubmit}
             disabled={saving}
-            className="flex-1 px-4 py-2 bg-accent text-bg rounded-md text-sm hover:opacity-90 disabled:opacity-40 transition-opacity"
+            className="flex-1 px-4 py-2.5 bg-accent text-bg rounded-2xl text-sm font-medium hover:opacity-90 disabled:opacity-40 transition-opacity"
           >
-            {saving ? '저장 중...' : '저장 후 종료'}
+            {saving ? '저장 중...' : '저장 후 표현 박제 →'}
           </button>
           <button
             onClick={onCancel}
             disabled={saving}
-            className="px-4 py-2 border border-line text-ink-soft rounded-md text-sm hover:bg-bg-soft disabled:opacity-40 transition-colors"
+            className="px-4 py-2.5 border border-line text-ink-soft rounded-2xl text-sm hover:bg-bg-soft disabled:opacity-40 transition-colors"
           >
             취소
           </button>

@@ -8,11 +8,17 @@ import {
   clearActiveSessionId,
 } from '@/lib/conversation'
 import { generateScenario, type Scenario } from '@/lib/scenario'
+import {
+  extractFromConversation,
+  savePickedExpressions,
+  type ExtractedExpression,
+} from '@/lib/extractor'
 import { ScenarioSetup, type SetupOpts } from '@/components/ScenarioSetup'
 import { ScenarioPreview } from '@/components/ScenarioPreview'
 import { ChatView } from '@/components/ChatView'
 import { PairSessionView } from '@/components/PairSessionView'
 import { SessionEndDialog } from '@/components/SessionEndDialog'
+import { ExtractionResults } from '@/components/ExtractionResults'
 
 type State =
   | { kind: 'loading' }
@@ -21,6 +27,21 @@ type State =
   | { kind: 'preview'; scenario: Scenario; opts: SetupOpts }
   | { kind: 'starting'; scenario: Scenario; opts: SetupOpts }
   | { kind: 'live'; session: Session & { id: number } }
+  | {
+      kind: 'extracting'
+      session: Session & { id: number }
+      rating?: number
+      note?: string
+    }
+  | {
+      kind: 'extracted'
+      session: Session & { id: number }
+      rating?: number
+      note?: string
+      expressions: ExtractedExpression[]
+      error: string | null
+    }
+  | { kind: 'finalizing' }
   | { kind: 'error'; message: string; retry: () => void }
 
 export function Chat() {
@@ -29,7 +50,6 @@ export function Chat() {
   const [endDialogOpen, setEndDialogOpen] = useState(false)
   const [savingEnd, setSavingEnd] = useState(false)
 
-  // 진입 시 활성 세션 복구
   useEffect(() => {
     const activeId = getActiveSessionId()
     if (!activeId) {
@@ -88,19 +108,87 @@ export function Chat() {
     }
   }
 
-  async function handleEndSubmit(
+  async function handleEndDialogSubmit(
     rating: number | undefined,
     note: string | undefined,
   ) {
     if (state.kind !== 'live') return
     setSavingEnd(true)
+
+    const session = state.session
+
+    // 다이얼로그 닫고 추출 페이지로 전환
+    setEndDialogOpen(false)
+    setSavingEnd(false)
+    setState({ kind: 'extracting', session, rating, note })
+
+    // 추출 시작 (백그라운드에서 await)
     try {
-      await endSession({ sessionId: state.session.id, rating, note })
-      setEndDialogOpen(false)
+      const turns = await db.turns
+        .where('sessionId')
+        .equals(session.id)
+        .sortBy('createdAt')
+      const expressions = await extractFromConversation({
+        difficulty: session.difficulty,
+        turns: turns.map((t) => ({ role: t.role, content: t.content })),
+      })
+      setState({
+        kind: 'extracted',
+        session,
+        rating,
+        note,
+        expressions,
+        error: null,
+      })
+    } catch (e) {
+      console.warn('[chat] 추출 실패:', e)
+      setState({
+        kind: 'extracted',
+        session,
+        rating,
+        note,
+        expressions: [],
+        error: e instanceof Error ? e.message : '추출 실패',
+      })
+    }
+  }
+
+  async function handleExtractionSubmit(kept: ExtractedExpression[]) {
+    if (state.kind !== 'extracted') return
+    setState({ kind: 'finalizing' })
+    try {
+      if (kept.length > 0) {
+        await savePickedExpressions({
+          sessionId: state.session.id,
+          expressions: kept,
+        })
+      }
+      await endSession({
+        sessionId: state.session.id,
+        rating: state.rating,
+        note: state.note,
+      })
       navigate('/sessions')
     } catch (e) {
       console.warn('[chat] 종료 저장 실패:', e)
-      setSavingEnd(false)
+      // 에러 나도 일단 정상 진입
+      navigate('/sessions')
+    }
+  }
+
+  async function handleExtractionSkip() {
+    if (state.kind !== 'extracted') return
+    setState({ kind: 'finalizing' })
+    try {
+      await endSession({
+        sessionId: state.session.id,
+        rating: state.rating,
+        note: state.note,
+      })
+      navigate('/sessions')
+    } catch (e) {
+      console.warn('[chat] 종료 저장 실패:', e)
+      navigate('/sessions')
     }
   }
 
@@ -159,12 +247,39 @@ export function Chat() {
           <SessionEndDialog
             open={endDialogOpen}
             onCancel={() => setEndDialogOpen(false)}
-            onSubmit={handleEndSubmit}
+            onSubmit={handleEndDialogSubmit}
             saving={savingEnd}
           />
         </>
       )
     }
+
+    case 'extracting':
+      return (
+        <ExtractionResults
+          expressions={[]}
+          loading={true}
+          saving={false}
+          error={null}
+          onSubmit={() => {}}
+          onSkip={() => {}}
+        />
+      )
+
+    case 'extracted':
+      return (
+        <ExtractionResults
+          expressions={state.expressions}
+          loading={false}
+          saving={false}
+          error={state.error}
+          onSubmit={handleExtractionSubmit}
+          onSkip={handleExtractionSkip}
+        />
+      )
+
+    case 'finalizing':
+      return <p className="text-ink-soft text-sm animate-pulse">저장 중...</p>
 
     case 'error':
       return (
@@ -177,13 +292,13 @@ export function Chat() {
           <div className="flex gap-2">
             <button
               onClick={state.retry}
-              className="px-4 py-2 bg-accent text-bg rounded-md text-sm"
+              className="px-4 py-2 bg-accent text-bg rounded-2xl text-sm"
             >
               다시 시도
             </button>
             <button
               onClick={() => setState({ kind: 'setup' })}
-              className="px-4 py-2 border border-line text-ink-soft rounded-md text-sm"
+              className="px-4 py-2 border border-line text-ink-soft rounded-2xl text-sm"
             >
               처음으로
             </button>
