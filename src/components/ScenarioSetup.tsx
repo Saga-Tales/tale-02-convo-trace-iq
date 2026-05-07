@@ -10,7 +10,7 @@ export interface SetupOpts {
   difficulty: Difficulty
   tags: string[]
   hint: string
-  partnerName?: string
+  participants?: string[]
 }
 
 interface Props {
@@ -32,7 +32,8 @@ export function ScenarioSetup({ onGenerate, loading }: Props) {
   const [difficulty, setDifficulty] = useState<Difficulty>('B1')
   const [tags, setTags] = useState<string[]>(['daily'])
   const [hint, setHint] = useState('')
-  const [partnerName, setPartnerName] = useState('')
+  const [participants, setParticipants] = useState<string[]>([])
+  const [participantInput, setParticipantInput] = useState('')
   const [customInput, setCustomInput] = useState('')
 
   function toggleTag(tag: string) {
@@ -55,20 +56,41 @@ export function ScenarioSetup({ onGenerate, loading }: Props) {
     }
   }
 
+  function addParticipant() {
+    const t = participantInput.trim()
+    if (!t) return
+    if (!participants.includes(t)) setParticipants((prev) => [...prev, t])
+    setParticipantInput('')
+  }
+
+  function removeParticipant(name: string) {
+    setParticipants((prev) => prev.filter((p) => p !== name))
+  }
+
+  function handleParticipantKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+      e.preventDefault()
+      addParticipant()
+    }
+  }
+
   function handleSubmit() {
     onGenerate({
       mode,
       difficulty,
       tags,
       hint: hint.trim(),
-      partnerName: mode === 'pair' ? partnerName.trim() || undefined : undefined,
+      participants: mode === 'pair' ? participants : undefined,
     })
   }
 
   const customTags = tags.filter(
     (t) => !(PRESET_KEYS as string[]).includes(t),
   )
-  const canSubmit = tags.length > 0 && !loading
+  const canSubmit =
+    tags.length > 0 &&
+    !loading &&
+    (mode === 'solo' || participants.length >= 1)
 
   return (
     <div className="space-y-6">
@@ -93,21 +115,65 @@ export function ScenarioSetup({ onGenerate, loading }: Props) {
             <Choice
               active={mode === 'pair'}
               onClick={() => setMode('pair')}
-              label="페어"
-              sub="직접 만남"
+              label="페어 (호스트)"
+              sub="N명 직접 만남"
             />
           </ChoiceRow>
+          {mode === 'pair' && (
+            <p className="text-xs text-ink-soft mt-2 leading-relaxed">
+              💡 게스트로 합류할 거면 회화 페이지의 <span className="text-accent font-medium">"QR로 합류"</span> 버튼을 눌러 호스트의 QR을 찍으세요.
+            </p>
+          )}
         </Field>
 
         {mode === 'pair' && (
-          <Field label="파트너 이름" hint="(선택)">
-            <input
-              type="text"
-              value={partnerName}
-              onChange={(e) => setPartnerName(e.target.value)}
-              placeholder="예: 아이큐"
-              className="w-full px-3 py-2 border border-line rounded-xl bg-bg-soft focus:outline-none focus:border-accent transition-colors"
-            />
+          <Field
+            label="참여자"
+            hint={`(나 외에 ${participants.length}명)`}
+          >
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={participantInput}
+                onChange={(e) => setParticipantInput(e.target.value)}
+                onKeyDown={handleParticipantKeyDown}
+                placeholder="예: 보욱 (Enter 추가)"
+                className="flex-1 px-3 py-2 border border-line rounded-xl bg-bg-soft text-sm focus:outline-none focus:border-accent transition-colors"
+              />
+              <button
+                type="button"
+                onClick={addParticipant}
+                disabled={!participantInput.trim()}
+                className="px-3 py-2 border border-line text-ink-soft rounded-xl text-sm hover:bg-bg-soft disabled:opacity-40"
+              >
+                추가
+              </button>
+            </div>
+            {participants.length > 0 && (
+              <div className="flex gap-1.5 mt-2 flex-wrap">
+                {participants.map((p) => (
+                  <span
+                    key={p}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-accent text-bg rounded-full text-xs"
+                  >
+                    {p}
+                    <button
+                      type="button"
+                      onClick={() => removeParticipant(p)}
+                      className="hover:opacity-70 leading-none"
+                      aria-label={`${p} 제거`}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            {participants.length === 0 && (
+              <p className="text-xs text-warn mt-2">
+                최소 1명 추가해주세요. (나 + {participantInput || 'N'}명)
+              </p>
+            )}
           </Field>
         )}
 

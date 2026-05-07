@@ -241,11 +241,11 @@ export function Home() {
 
       <section className="border border-line bg-bg-soft rounded-2xl p-5">
         <h2 className="font-display italic text-lg text-ink mb-3">
-          <span className="sig-star">다음 단계 (Day 6)</span>
+          <span className="sig-star">다음 단계 (Day 7)</span>
         </h2>
         <ul className="text-sm text-ink-soft space-y-1.5 leading-relaxed">
-          <li>· 페어 모드 QR 시나리오 공유 + 캡처 동기화</li>
-          <li>· PWA + 오프라인 백업 (export/import)</li>
+          <li>· PWA — 앱처럼 설치, 오프라인 캐싱</li>
+          <li>· JSON 백업 export/import — 디바이스 갈아탈 때</li>
         </ul>
       </section>
     </div>

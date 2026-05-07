@@ -5,27 +5,29 @@ import { getNickname } from '@/lib/profile'
 interface Props {
   scenario: Scenario
   mode: SessionMode
-  partnerName?: string
+  participants?: string[]
   onStart: () => void
   onRegenerate: () => void
   onCancel: () => void
+  onShareQR?: () => void
   starting: boolean
 }
 
 export function ScenarioPreview({
   scenario,
   mode,
-  partnerName,
+  participants,
   onStart,
   onRegenerate,
   onCancel,
+  onShareQR,
   starting,
 }: Props) {
   const nickname = getNickname()
-  const userLabel = mode === 'solo' ? nickname || '나' : scenario.userRole
+  const userLabel = mode === 'solo' ? nickname || '나' : nickname || scenario.userRole
   const partnerLabel =
-    mode === 'pair' && partnerName
-      ? `${partnerName} (${scenario.aiRole})`
+    mode === 'pair' && participants && participants.length > 0
+      ? `${participants[0]} (${scenario.aiRole})`
       : scenario.aiRole
 
   return (
@@ -64,6 +66,27 @@ export function ScenarioPreview({
             <p className="text-sm text-ink">{scenario.aiRole}</p>
           </div>
         </div>
+
+        {mode === 'pair' && participants && participants.length > 0 && (
+          <div>
+            <p className="text-xs uppercase text-ink-soft tracking-wider mb-2">
+              참여자
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              <span className="px-2.5 py-1 bg-accent text-bg rounded-full text-xs">
+                {nickname || '나'} (호스트)
+              </span>
+              {participants.map((p) => (
+                <span
+                  key={p}
+                  className="px-2.5 py-1 bg-bg-soft border border-line text-ink-soft rounded-full text-xs"
+                >
+                  {p}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div>
           <p className="text-xs uppercase text-ink-soft tracking-wider mb-2">
@@ -124,6 +147,22 @@ export function ScenarioPreview({
           </div>
         )}
       </section>
+
+      {/* 호스트 페어 모드: QR 공유 안내 */}
+      {mode === 'pair' && onShareQR && (
+        <div className="border border-accent gradient-card rounded-2xl p-4 space-y-3">
+          <p className="text-sm text-ink leading-relaxed">
+            ✦ 게스트들이 같은 시나리오를 받으려면 QR을 공유하세요. 다 찍은 후 "시작"을 누르면 모두 같은 회화 흐름.
+          </p>
+          <button
+            onClick={onShareQR}
+            disabled={starting}
+            className="w-full px-4 py-2.5 bg-accent text-bg rounded-2xl text-sm font-medium hover:opacity-90 disabled:opacity-40"
+          >
+            📱 QR로 시나리오 공유
+          </button>
+        </div>
+      )}
 
       <div className="flex gap-2">
         <button

@@ -75,7 +75,13 @@ function SessionCard({ session }: { session: Session }) {
           <span className="text-ink-soft">
             {session.mode === 'solo'
               ? '솔로'
-              : `페어${session.partnerName ? ` · ${session.partnerName}` : ''}`}
+              : `페어${session.role ? `·${session.role === 'host' ? '호스트' : '게스트'}` : ''}${
+                  session.participants && session.participants.length > 0
+                    ? ` · ${session.participants.length + 1}명`
+                    : session.partnerName
+                      ? ` · ${session.partnerName}`
+                      : ''
+                }`}
           </span>
         </div>
       </header>

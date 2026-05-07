@@ -12,11 +12,11 @@ export const DIFFICULTY_GROUPS = {
 }
 
 export type SessionMode = 'solo' | 'pair'
+export type SessionRole = 'host' | 'guest'
 export type PhraseType = 'stuck' | 'new' | 'good'
 export type CaptureSource = 'self' | 'imported'
 export type ScenarioSource = 'preset' | 'generated' | 'user'
 
-/** 시나리오 예시 대화의 한 턴 — 누가 말하는지 + 영어 문장 + 선택적 한국어 의도 */
 export interface DialogTurn {
   speaker: 'user' | 'partner'
   english: string
@@ -25,6 +25,12 @@ export interface DialogTurn {
 
 export interface Session {
   id?: number
+  /** 페어 모드에서 host와 guests를 매칭하는 UUID. 솔로/단일 디바이스 페어는 undefined. */
+  sessionUuid?: string
+  /** 페어 모드에서 이 디바이스의 역할 */
+  role?: SessionRole
+  /** 페어 참여자 이름 배열 (호스트 본인 + 게스트들). 솔로는 undefined. */
+  participants?: string[]
   scenarioTitle: string
   scenarioBrief: string
   scenarioObjectives?: string[]
@@ -35,6 +41,7 @@ export interface Session {
   difficulty: Difficulty
   tags: string[]
   mode: SessionMode
+  /** @deprecated participants를 사용. 하위호환용. */
   partnerName?: string
   startedAt: number
   endedAt: number | null
@@ -98,26 +105,21 @@ class ConvoTraceDB extends Dexie {
   constructor() {
     super('convo-trace-iq')
 
-    // v1: 골격
     this.version(1).stores({
       sessions: '++id, startedAt, endedAt, mode',
       turns: '++id, sessionId, createdAt',
-      vocabulary:
-        '++id, &[term+meaningKo], capturedAt, nextReviewAt, mastery',
-      phrases:
-        '++id, &[expressionEn+intentKo], capturedAt, nextReviewAt, mastery, type',
+      vocabulary: '++id, &[term+meaningKo], capturedAt, nextReviewAt, mastery',
+      phrases: '++id, &[expressionEn+intentKo], capturedAt, nextReviewAt, mastery, type',
       scenarios: '++id, lastUsedAt',
     })
 
-    // v2: difficulty 라벨을 CEFR 코드로 마이그레이션
+    // v2: difficulty CEFR 마이그레이션
     this.version(2)
       .stores({
         sessions: '++id, startedAt, endedAt, mode',
         turns: '++id, sessionId, createdAt',
-        vocabulary:
-          '++id, &[term+meaningKo], capturedAt, nextReviewAt, mastery',
-        phrases:
-          '++id, &[expressionEn+intentKo], capturedAt, nextReviewAt, mastery, type',
+        vocabulary: '++id, &[term+meaningKo], capturedAt, nextReviewAt, mastery',
+        phrases: '++id, &[expressionEn+intentKo], capturedAt, nextReviewAt, mastery, type',
         scenarios: '++id, lastUsedAt',
       })
       .upgrade(async (tx) => {
@@ -126,45 +128,53 @@ class ConvoTraceDB extends Dexie {
           intermediate: 'B1+',
           advanced: 'C1+',
         }
-        await tx
-          .table('sessions')
-          .toCollection()
-          .modify((s: { difficulty: string }) => {
-            if (s.difficulty in map) s.difficulty = map[s.difficulty]
-          })
-        await tx
-          .table('scenarios')
-          .toCollection()
-          .modify((s: { difficulty: string }) => {
-            if (s.difficulty in map) s.difficulty = map[s.difficulty]
-          })
+        await tx.table('sessions').toCollection().modify((s: { difficulty: string }) => {
+          if (s.difficulty in map) s.difficulty = map[s.difficulty]
+        })
+        await tx.table('scenarios').toCollection().modify((s: { difficulty: string }) => {
+          if (s.difficulty in map) s.difficulty = map[s.difficulty]
+        })
       })
 
-    // v3: scenarioKeyExpressions: string[] → DialogTurn[]
-    // (이전엔 영어 문장 배열이었지만 이제 화자가 있는 dialog turn 배열)
+    // v3: scenarioKeyExpressions string[] → DialogTurn[]
     this.version(3)
       .stores({
         sessions: '++id, startedAt, endedAt, mode',
         turns: '++id, sessionId, createdAt',
-        vocabulary:
-          '++id, &[term+meaningKo], capturedAt, nextReviewAt, mastery',
-        phrases:
-          '++id, &[expressionEn+intentKo], capturedAt, nextReviewAt, mastery, type',
+        vocabulary: '++id, &[term+meaningKo], capturedAt, nextReviewAt, mastery',
+        phrases: '++id, &[expressionEn+intentKo], capturedAt, nextReviewAt, mastery, type',
         scenarios: '++id, lastUsedAt',
       })
       .upgrade(async (tx) => {
-        await tx
-          .table('sessions')
-          .toCollection()
-          .modify((s: { scenarioKeyExpressions?: unknown[] }) => {
-            const arr = s.scenarioKeyExpressions
-            if (Array.isArray(arr) && arr.length > 0 && typeof arr[0] === 'string') {
-              s.scenarioKeyExpressions = (arr as string[]).map((english) => ({
-                speaker: 'partner' as const,
-                english,
-              }))
-            }
-          })
+        await tx.table('sessions').toCollection().modify((s: { scenarioKeyExpressions?: unknown[] }) => {
+          const arr = s.scenarioKeyExpressions
+          if (Array.isArray(arr) && arr.length > 0 && typeof arr[0] === 'string') {
+            s.scenarioKeyExpressions = (arr as string[]).map((english) => ({
+              speaker: 'partner' as const,
+              english,
+            }))
+          }
+        })
+      })
+
+    // v4: 페어 모드 N명 + 동기화 — sessionUuid, role, participants 추가
+    // partnerName은 deprecated하되 유지 (하위호환)
+    this.version(4)
+      .stores({
+        sessions: '++id, startedAt, endedAt, mode, sessionUuid',
+        turns: '++id, sessionId, createdAt',
+        vocabulary: '++id, &[term+meaningKo], capturedAt, nextReviewAt, mastery',
+        phrases: '++id, &[expressionEn+intentKo], capturedAt, nextReviewAt, mastery, type',
+        scenarios: '++id, lastUsedAt',
+      })
+      .upgrade(async (tx) => {
+        // 기존 페어 세션 — partnerName이 있으면 participants로 옮김 (호스트 본인은 닉네임 모르므로 partnerName만)
+        await tx.table('sessions').toCollection().modify((s: Session) => {
+          if (s.mode === 'pair' && s.partnerName && !s.participants) {
+            s.participants = [s.partnerName]
+            s.role = 'host' // 기존 단일 디바이스 페어는 모두 호스트로 간주
+          }
+        })
       })
   }
 }

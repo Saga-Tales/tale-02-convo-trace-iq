@@ -33,8 +33,14 @@ export async function startSession(opts: {
   tags: string[]
   mode: SessionMode
   partnerName?: string
+  sessionUuid?: string
+  role?: 'host' | 'guest'
+  participants?: string[]
 }): Promise<number> {
   const sessionId = await db.sessions.add({
+    sessionUuid: opts.sessionUuid,
+    role: opts.role,
+    participants: opts.participants,
     scenarioTitle: opts.scenario.title,
     scenarioBrief: opts.scenario.brief,
     scenarioObjectives: opts.scenario.objectives,
