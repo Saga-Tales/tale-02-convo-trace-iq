@@ -1,5 +1,9 @@
 import { useState } from 'react'
-import type { Difficulty, SessionMode } from '@/db/schema'
+import {
+  type Difficulty,
+  type SessionMode,
+  DIFFICULTY_GROUPS,
+} from '@/db/schema'
 
 export interface SetupOpts {
   mode: SessionMode
@@ -14,12 +18,6 @@ interface Props {
   loading: boolean
 }
 
-const DIFFICULTY_LABELS: Record<Difficulty, string> = {
-  beginner: '초급 (A2)',
-  intermediate: '중급 (B1-B2)',
-  advanced: '고급 (C1)',
-}
-
 const TAG_LABELS = {
   business: '비즈니스',
   daily: '일상',
@@ -30,7 +28,7 @@ type TagKey = keyof typeof TAG_LABELS
 
 export function ScenarioSetup({ onGenerate, loading }: Props) {
   const [mode, setMode] = useState<SessionMode>('solo')
-  const [difficulty, setDifficulty] = useState<Difficulty>('intermediate')
+  const [difficulty, setDifficulty] = useState<Difficulty>('B1')
   const [tags, setTags] = useState<TagKey[]>(['daily'])
   const [hint, setHint] = useState('')
   const [partnerName, setPartnerName] = useState('')
@@ -86,23 +84,32 @@ export function ScenarioSetup({ onGenerate, loading }: Props) {
               type="text"
               value={partnerName}
               onChange={(e) => setPartnerName(e.target.value)}
-              placeholder="예: 보욱"
+              placeholder="예: IQ"
               className="w-full px-3 py-2 border border-line rounded-md bg-bg-soft focus:outline-none focus:border-accent"
             />
           </Field>
         )}
 
-        <Field label="난이도">
-          <ChoiceRow>
-            {(Object.keys(DIFFICULTY_LABELS) as Difficulty[]).map((d) => (
-              <Choice
-                key={d}
-                active={difficulty === d}
-                onClick={() => setDifficulty(d)}
-                label={DIFFICULTY_LABELS[d]}
-              />
+        <Field label="난이도" hint="(CEFR 기준)">
+          <div className="space-y-2">
+            {(Object.entries(DIFFICULTY_GROUPS) as Array<
+              [string, readonly Difficulty[]]
+            >).map(([groupName, levels]) => (
+              <div key={groupName}>
+                <p className="text-xs text-ink-soft mb-1.5">{groupName}</p>
+                <ChoiceRow>
+                  {levels.map((d) => (
+                    <Choice
+                      key={d}
+                      active={difficulty === d}
+                      onClick={() => setDifficulty(d)}
+                      label={d}
+                    />
+                  ))}
+                </ChoiceRow>
+              </div>
             ))}
-          </ChoiceRow>
+          </div>
         </Field>
 
         <Field label="카테고리" hint="(여러 개 가능)">

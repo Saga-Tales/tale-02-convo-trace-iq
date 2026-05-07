@@ -37,6 +37,9 @@ export async function startSession(opts: {
   const sessionId = await db.sessions.add({
     scenarioTitle: opts.scenario.title,
     scenarioBrief: opts.scenario.brief,
+    scenarioObjectives: opts.scenario.objectives,
+    scenarioKeyExpressions: opts.scenario.keyExpressions,
+    scenarioLearningGoals: opts.scenario.learningGoals,
     difficulty: opts.difficulty,
     tags: opts.tags,
     mode: opts.mode,
@@ -45,7 +48,6 @@ export async function startSession(opts: {
     endedAt: null,
   })
 
-  // 솔로 모드: openingLine을 첫 turn으로 저장. 페어는 turns 사용 안 함.
   if (opts.mode === 'solo') {
     await db.turns.add({
       sessionId: sessionId as number,
@@ -73,9 +75,15 @@ export async function endSession(opts: {
 }
 
 const DIFFICULTY_INSTRUCTION: Record<Difficulty, string> = {
-  beginner: 'A2 수준 어휘. 짧은 문장. 어려운 관용 표현 자제.',
-  intermediate: 'B1-B2 수준 어휘. 자연스러운 회화체. 가끔 관용 표현 OK.',
-  advanced: 'C1 수준. 관용 표현, 비유, 복잡한 문장 구조 자유롭게.',
+  A1: 'A1 입문 — 기본 인사, 단순 자기소개. 한 번에 1-2문장, 매우 짧고 단순한 어휘만.',
+  A2: 'A2 기초 — 일상 어휘, 짧은 문장. 어려운 관용 표현 자제.',
+  'A2+': 'A2+ 초중급 — 익숙한 주제 자연스러운 회화체. 짧은 문장 위주.',
+  B1: 'B1 중하급 — 익숙한 주제 표현. 자연스럽지만 너무 정교하지 않게.',
+  'B1+': 'B1+ 중급 — 다양한 주제 토론 OK. 가끔 관용 표현 OK.',
+  B2: 'B2 중상급 — 복잡한 주제 가능. 추상적 개념과 관용 표현 자유롭게.',
+  C1: 'C1 상급 — 정교한 표현, 비유, 문화적 뉘앙스 자유롭게.',
+  'C1+': 'C1+ 고급 — 거의 원어민 수준. 미묘한 차이 표현.',
+  C2: 'C2 최상급 — 원어민 수준. 모든 주제 자유롭게.',
 }
 
 function buildConversationSystem(session: Session): string {

@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, type KeyboardEvent } from 'react'
 import { db, type Session, type Turn } from '@/db/schema'
 import { streamReply } from '@/lib/conversation'
 import type { ConversationMessage } from '@/lib/anthropic'
+import { AskKoreanModal } from './AskKoreanModal'
+import { WordLookupModal } from './WordLookupModal'
 
 interface Props {
   session: Session & { id: number }
@@ -13,9 +15,11 @@ export function ChatView({ session, onEnd }: Props) {
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [streamingText, setStreamingText] = useState('')
+  const [askKoreanOpen, setAskKoreanOpen] = useState(false)
+  const [wordLookupOpen, setWordLookupOpen] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // 첫 로드 — 기존 turns 가져오기
   useEffect(() => {
     db.turns
       .where('sessionId')
@@ -24,19 +28,22 @@ export function ChatView({ session, onEnd }: Props) {
       .then(setTurns)
   }, [session.id])
 
-  // turns/streaming 변경 시 하단 스크롤
   useEffect(() => {
     const el = scrollRef.current
     if (!el) return
     el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
   }, [turns, streamingText])
 
+  function showToast(msg: string) {
+    setToast(msg)
+    setTimeout(() => setToast(null), 2500)
+  }
+
   async function handleSend() {
     const text = input.trim()
     if (!text || streaming) return
     setInput('')
 
-    // user turn 즉시 표시 + DB 저장
     const userTurn: Turn = {
       sessionId: session.id,
       role: 'user',
@@ -47,10 +54,10 @@ export function ChatView({ session, onEnd }: Props) {
     const savedUserTurn = { ...userTurn, id: userId as number }
     setTurns((prev) => [...prev, savedUserTurn])
 
-    // history 빌드 — system은 conversation.ts가 처리
     const history: ConversationMessage[] = [...turns, savedUserTurn]
-      .filter((t): t is Turn & { role: 'user' | 'assistant' } =>
-        t.role === 'user' || t.role === 'assistant',
+      .filter(
+        (t): t is Turn & { role: 'user' | 'assistant' } =>
+          t.role === 'user' || t.role === 'assistant',
       )
       .map((t) => ({ role: t.role, content: t.content }))
 
@@ -92,6 +99,10 @@ export function ChatView({ session, onEnd }: Props) {
       void handleSend()
     }
   }
+
+  const lastAssistantContent = [...turns]
+    .reverse()
+    .find((t) => t.role === 'assistant')?.content
 
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 9rem)' }}>
@@ -142,6 +153,22 @@ export function ChatView({ session, onEnd }: Props) {
         )}
       </div>
 
+      {/* 캡처 도구 행 */}
+      <div className="flex gap-1.5 mb-2">
+        <button
+          onClick={() => setAskKoreanOpen(true)}
+          className="px-3 py-1.5 border border-line text-ink-soft rounded-md text-xs hover:bg-bg-soft hover:text-accent transition-colors"
+        >
+          한국어로?
+        </button>
+        <button
+          onClick={() => setWordLookupOpen(true)}
+          className="px-3 py-1.5 border border-line text-ink-soft rounded-md text-xs hover:bg-bg-soft hover:text-accent transition-colors"
+        >
+          단어 뜻
+        </button>
+      </div>
+
       {/* 입력창 */}
       <div className="flex gap-2 items-stretch">
         <textarea
@@ -161,6 +188,34 @@ export function ChatView({ session, onEnd }: Props) {
           전송
         </button>
       </div>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-ink text-bg rounded-full text-sm shadow-lg z-30">
+          {toast}
+        </div>
+      )}
+
+      {/* 모달들 */}
+      <AskKoreanModal
+        open={askKoreanOpen}
+        onClose={() => setAskKoreanOpen(false)}
+        sessionId={session.id}
+        scenarioContext={session.scenarioBrief}
+        onUseInChat={(english) => {
+          setInput((prev) => (prev ? `${prev} ${english}` : english))
+          showToast('🔖 표현 저장됨 — 입력창에 채워졌어요')
+        }}
+      />
+      <WordLookupModal
+        open={wordLookupOpen}
+        onClose={() => setWordLookupOpen(false)}
+        sessionId={session.id}
+        lastAssistantContent={lastAssistantContent}
+        onCapture={(alreadyKnew) => {
+          showToast(alreadyKnew ? '🔖 이미 저장된 단어' : '🔖 단어 저장됨')
+        }}
+      />
     </div>
   )
 }

@@ -32,7 +32,9 @@ export function ScenarioPreview({
           <h2 className="font-display text-2xl text-accent">{scenario.title}</h2>
         </div>
 
-        <p className="text-ink leading-relaxed">{scenario.brief}</p>
+        <p className="text-ink leading-relaxed whitespace-pre-line">
+          {scenario.brief}
+        </p>
 
         <div className="grid grid-cols-2 gap-4 pt-1">
           <div>
@@ -47,6 +49,38 @@ export function ScenarioPreview({
             </p>
             <p className="text-sm text-ink">{scenario.aiRole}</p>
           </div>
+        </div>
+
+        <div>
+          <p className="text-xs uppercase text-ink-soft tracking-wider mb-2">
+            회화 진행 흐름
+          </p>
+          <ol className="space-y-1.5 list-none">
+            {scenario.objectives.map((o, i) => (
+              <li key={i} className="text-sm text-ink flex gap-2.5 leading-relaxed">
+                <span className="font-display italic text-accent shrink-0">
+                  {i + 1}.
+                </span>
+                <span>{o}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <div>
+          <p className="text-xs uppercase text-ink-soft tracking-wider mb-2">
+            막혔을 때 따라할 표현
+          </p>
+          <ul className="space-y-1.5 bg-bg-soft border border-line rounded-md p-3">
+            {scenario.keyExpressions.map((e, i) => (
+              <li
+                key={i}
+                className="text-sm text-ink leading-relaxed font-display italic"
+              >
+                "{e}"
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div>
