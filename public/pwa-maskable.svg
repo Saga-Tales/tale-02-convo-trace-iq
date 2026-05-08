@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" fill="#fff8ee"/>
+  <!-- 안전 영역 (40% 마진) — 중앙 약 60%만 사용 -->
+  <rect x="160" y="296" width="192" height="64" rx="8" fill="#fff070" opacity="0.9"/>
+  <text x="256" y="344" text-anchor="middle" font-family="serif" font-style="italic" font-size="160" fill="#ec4899" font-weight="700">ct</text>
+  <!-- star inside safe area -->
+  <g transform="translate(340 220) scale(1.4)">
+    <path d="M 0 -28 L 6 -6 L 28 0 L 6 6 L 0 28 L -6 6 L -28 0 L -6 -6 Z" fill="#14787e"/>
+  </g>
+</svg>

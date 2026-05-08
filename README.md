@@ -66,7 +66,7 @@ npm run build    # dist/ 정적 파일 생성
 - [x] **Day 4**: 회화 종료 후 자동 표현 추출 (extractor.ts + 8-cap validator) + keep/discard UI (ExtractionResults) + ChatView 안에 collapsible 시나리오 패널 (ScenarioPanel, 기본 펼침) + 디자인 리뉴얼 (vibrant pink primary, sky blue pop, rounded-2xl, ✦ 시그니처 도형, gradient cards, lift hover, pop-in animation)
 - [x] **Day 5**: 회상 폐쇄 루프 — selectRecallPhrases (mastery 낮고 만료된 phrase 3개) + scenario.ts prompt에 자연스러운 hint로 주입 + 종료 후 자동 mastery 업데이트 (user turns 등장→'used', 시나리오 등장만→'seen', substring keyword match) + SM-2 단순화 변형 (mastery 0-10 + nextReviewAt) + Home 정교화 (스트릭, 회상 예고 카드, mastery 분포 bar) + Vocab phrase/word 카드에 mastery 라벨 표시
 - [x] **Day 6**: N명 페어 모드 + QR 시나리오 공유 + QR 캡처 동기화 — Session에 sessionUuid·role·participants 추가 (v4 마이그레이션) + lib/share.ts (pako gzip + base64 + magic prefix CT1, 형식 validator) + lib/sync.ts (받은 share를 dedup 머지, source='imported') + QRCodeView · QRScanner · ShareScenarioModal · JoinByQRModal · PairSyncModal (호스트/게스트 분기 멀티 step) + 호스트 흐름 (시나리오 공유 → 회화 → 게스트 캡처 차례로 받기 → 통합본 broadcast) + 게스트 흐름 (QR로 합류 → 회화 → 자기 캡처 보내기 → 통합본 받기) + 페어 모드 추출 skip (음성 회화라 turns 없음)
-- [ ] **Day 7**: PWA + JSON 백업 export/import (디바이스 갈아탈 때)
+- [x] **Day 7**: PWA + JSON 백업 — vite-plugin-pwa (Workbox precache + Anthropic NetworkOnly + 폰트/CDN runtime cache) + manifest (theme color #ec4899, ct 아이콘 192/512/maskable) + iOS Safari 메타태그 (apple-mobile-web-app-capable, apple-touch-icon) + lib/backup.ts (BackupFile JSON 형식, schema v4, 검증) + Settings BackupSection (export with turns/nickname toggle, import preview → Merge/Replace 선택) + PWA 설치 안내 섹션
 
 ## Tech stack
 

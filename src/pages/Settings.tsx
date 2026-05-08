@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getApiKey, setApiKey, clearApiKey } from '@/lib/anthropic'
 import { getNickname, setNickname } from '@/lib/profile'
+import { BackupSection } from '@/components/BackupSection'
 
 export function Settings() {
   const navigate = useNavigate()
@@ -127,6 +128,10 @@ export function Settings() {
         </div>
       </section>
 
+      <BackupSection />
+
+      <PWAInstallSection />
+
       <section className="border border-line gradient-card-warm rounded-2xl p-5">
         <h2 className="font-display italic text-lg text-ink mb-2">
           개인정보
@@ -138,5 +143,41 @@ export function Settings() {
         </p>
       </section>
     </div>
+  )
+}
+
+function PWAInstallSection() {
+  return (
+    <section className="border border-line bg-white rounded-2xl p-5 shadow-sm space-y-3">
+      <div>
+        <h2 className="font-display italic text-lg text-ink mb-1">
+          홈 화면에 추가
+        </h2>
+        <p className="text-xs text-ink-soft leading-relaxed">
+          앱처럼 설치하면 풀스크린 + 오프라인 캐싱 + 빠른 실행이 가능해요.
+        </p>
+      </div>
+
+      <div className="space-y-2 text-sm">
+        <div className="border border-line bg-bg-soft rounded-xl p-3 space-y-1">
+          <p className="font-medium text-ink">📱 iOS Safari</p>
+          <p className="text-xs text-ink-soft leading-relaxed">
+            공유 버튼 (□↑) → "홈 화면에 추가"
+          </p>
+        </div>
+        <div className="border border-line bg-bg-soft rounded-xl p-3 space-y-1">
+          <p className="font-medium text-ink">🤖 Android Chrome</p>
+          <p className="text-xs text-ink-soft leading-relaxed">
+            메뉴 (⋮) → "앱 설치" 또는 자동 안내 배너 탭
+          </p>
+        </div>
+        <div className="border border-line bg-bg-soft rounded-xl p-3 space-y-1">
+          <p className="font-medium text-ink">💻 데스크탑 Chrome/Edge</p>
+          <p className="text-xs text-ink-soft leading-relaxed">
+            주소창 우측 설치 아이콘 (⊕) 또는 메뉴 → "앱으로 설치"
+          </p>
+        </div>
+      </div>
+    </section>
   )
 }

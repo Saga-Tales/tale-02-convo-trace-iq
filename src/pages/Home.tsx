@@ -241,11 +241,13 @@ export function Home() {
 
       <section className="border border-line bg-bg-soft rounded-2xl p-5">
         <h2 className="font-display italic text-lg text-ink mb-3">
-          <span className="sig-star">다음 단계 (Day 7)</span>
+          <span className="sig-star">완성된 기능</span>
         </h2>
         <ul className="text-sm text-ink-soft space-y-1.5 leading-relaxed">
-          <li>· PWA — 앱처럼 설치, 오프라인 캐싱</li>
-          <li>· JSON 백업 export/import — 디바이스 갈아탈 때</li>
+          <li>· 솔로 회화 + 페어 회화 (N명, QR 동기화)</li>
+          <li>· 캡처 (한국어로?, 단어 뜻) + 자동 표현 추출</li>
+          <li>· 회상 — 다음 회화에 학습 표현이 자연스럽게 등장</li>
+          <li>· PWA 설치 + JSON 백업/복원 (설정에서)</li>
         </ul>
       </section>
     </div>

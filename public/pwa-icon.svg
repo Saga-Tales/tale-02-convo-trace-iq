@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="96" fill="#fff8ee"/>
+  <!-- highlight bar behind 'ct' -->
+  <rect x="72" y="288" width="368" height="112" rx="16" fill="#fff070" opacity="0.9"/>
+  <!-- 'ct' text in pink italic -->
+  <text x="256" y="376" text-anchor="middle" font-family="serif" font-style="italic" font-size="304" fill="#ec4899" font-weight="700">ct</text>
+  <!-- 4-pointed star (✦) drawn as path -->
+  <g transform="translate(420 144) scale(2.4)">
+    <path d="M 0 -28 L 6 -6 L 28 0 L 6 6 L 0 28 L -6 6 L -28 0 L -6 -6 Z" fill="#14787e"/>
+  </g>
+</svg>
