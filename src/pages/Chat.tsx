@@ -120,6 +120,7 @@ export function Chat() {
         tags: opts.tags,
         hint: opts.hint,
         recallPhrases: recallHints,
+        mode: opts.mode,
       })
       const sessionUuid = crypto.randomUUID()
       setState({ kind: 'preview', scenario, opts, sessionUuid })

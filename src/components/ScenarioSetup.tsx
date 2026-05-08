@@ -19,9 +19,12 @@ interface Props {
 }
 
 const PRESET_TAGS = {
-  business: '비즈니스',
   daily: '일상',
+  business: '비즈니스',
   office: '사무실',
+  shopping: '쇼핑',
+  travel: '여행',
+  cafe: '카페·음식점',
 } as const
 
 type PresetTagKey = keyof typeof PRESET_TAGS
@@ -262,7 +265,11 @@ export function ScenarioSetup({ onGenerate, loading }: Props) {
           <textarea
             value={hint}
             onChange={(e) => setHint(e.target.value)}
-            placeholder="예: VC 미팅 같은 분위기, 공항 체크인, 친구와 카페에서..."
+            placeholder={
+              mode === 'pair'
+                ? '예: 쇼핑 (물건 위치, 사이즈 문의, 계산), 카페에서 친구와 잡담, 공항 체크인...'
+                : '예: VC 미팅 같은 분위기, 공항 체크인, 친구와 카페에서...'
+            }
             rows={2}
             className="w-full px-3 py-2 border border-line rounded-xl bg-bg-soft focus:outline-none focus:border-accent resize-none text-sm transition-colors"
           />

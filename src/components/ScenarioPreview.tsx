@@ -24,11 +24,12 @@ export function ScenarioPreview({
   starting,
 }: Props) {
   const nickname = getNickname()
-  const userLabel = mode === 'solo' ? nickname || '나' : nickname || scenario.userRole
-  const partnerLabel =
-    mode === 'pair' && participants && participants.length > 0
-      ? `${participants[0]} (${scenario.aiRole})`
-      : scenario.aiRole
+  // 솔로: 사용자 닉네임 vs AI 역할
+  // 페어: 시나리오의 두 역할만 (사람 이름 X — 누가 어떤 역할 맡을지 페어가 자유롭게 결정)
+  const userLabel = mode === 'solo'
+    ? (nickname || '나')
+    : scenario.userRole
+  const partnerLabel = scenario.aiRole
 
   return (
     <div className="space-y-6">
@@ -108,18 +109,41 @@ export function ScenarioPreview({
         </div>
 
         <div>
-          <p className="text-xs uppercase text-ink-soft tracking-wider mb-2">
-            예시 대화 흐름
-          </p>
-          <div className="bg-bg-soft border border-line rounded-xl p-4 space-y-3">
-            {scenario.keyExpressions.map((turn, i) => (
-              <DialogRow
-                key={i}
-                turn={turn}
-                userLabel={userLabel}
-                partnerLabel={partnerLabel}
-              />
-            ))}
+          <div className="flex items-baseline justify-between mb-2">
+            <p className="text-xs uppercase text-ink-soft tracking-wider">
+              예시 대화 흐름
+            </p>
+            <p className="text-xs text-ink-soft">
+              {scenario.keyExpressions.length} turns
+              {mode === 'pair' && ' · 4 phase'}
+            </p>
+          </div>
+          <div
+            className={`bg-bg-soft border border-line rounded-xl p-4 space-y-3 ${
+              mode === 'pair' ? 'max-h-[60vh] overflow-y-auto' : ''
+            }`}
+          >
+            {scenario.keyExpressions.map((turn, i) => {
+              // 페어 모드 4 phase 구분 마커
+              const phaseMarker =
+                mode === 'pair'
+                  ? getPhaseMarker(i, scenario.keyExpressions.length)
+                  : null
+              return (
+                <div key={i}>
+                  {phaseMarker && (
+                    <p className="text-xs uppercase tracking-wider text-accent font-semibold pt-2 pb-1 border-t border-line first:border-t-0 first:pt-0">
+                      ✦ {phaseMarker}
+                    </p>
+                  )}
+                  <DialogRow
+                    turn={turn}
+                    userLabel={userLabel}
+                    partnerLabel={partnerLabel}
+                  />
+                </div>
+              )
+            })}
           </div>
         </div>
 
@@ -223,4 +247,31 @@ function DialogRow({
       )}
     </div>
   )
+}
+
+/**
+ * 페어 모드 4 phase 구분 마커.
+ * 현재 turn index가 각 phase의 시작점이면 라벨 반환.
+ *
+ * Phase 비율 (대략):
+ * - Opening: 0-15%
+ * - Main exchange: 15-50%
+ * - Development: 50-80%
+ * - Closing: 80-100%
+ *
+ * 첫 turn에는 'Opening' 라벨, 각 phase 경계에서 라벨 반환.
+ */
+function getPhaseMarker(turnIndex: number, total: number): string | null {
+  const ratio = turnIndex / total
+  const prevRatio = turnIndex > 0 ? (turnIndex - 1) / total : -1
+
+  // Opening 시작 (첫 turn)
+  if (turnIndex === 0) return 'Opening — 인사·근황'
+  // Main exchange 시작 (15% 경계 통과)
+  if (prevRatio < 0.15 && ratio >= 0.15) return 'Main — 본 주제 깊이'
+  // Development 시작 (50% 경계 통과)
+  if (prevRatio < 0.5 && ratio >= 0.5) return 'Development — 전개 변화'
+  // Closing 시작 (80% 경계 통과)
+  if (prevRatio < 0.8 && ratio >= 0.8) return 'Closing — 마무리'
+  return null
 }
