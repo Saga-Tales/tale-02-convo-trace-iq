@@ -267,7 +267,7 @@ export function ScenarioSetup({ onGenerate, loading }: Props) {
             onChange={(e) => setHint(e.target.value)}
             placeholder={
               mode === 'pair'
-                ? '예: 쇼핑 (물건 위치, 사이즈 문의, 계산), 카페에서 친구와 잡담, 공항 체크인...'
+                ? '예: 쇼핑 (짧게, 점원과 거래) / 카페에서 친구와 깊은 토론 / 공항 체크인 / 면접 인터뷰...'
                 : '예: VC 미팅 같은 분위기, 공항 체크인, 친구와 카페에서...'
             }
             rows={2}
