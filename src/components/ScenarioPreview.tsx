@@ -115,12 +115,14 @@ export function ScenarioPreview({
             </p>
             <p className="text-xs text-ink-soft">
               {scenario.keyExpressions.length} turns
-              {mode === 'pair' && ' · 4 phase'}
+              {mode === 'pair' && scenario.keyExpressions.length >= 20 && ' · 4 phase'}
             </p>
           </div>
           <div
             className={`bg-bg-soft border border-line rounded-xl p-4 space-y-3 ${
-              mode === 'pair' ? 'max-h-[60vh] overflow-y-auto' : ''
+              mode === 'pair' && scenario.keyExpressions.length >= 15
+                ? 'max-h-[60vh] overflow-y-auto'
+                : ''
             }`}
           >
             {scenario.keyExpressions.map((turn, i) => {
@@ -250,28 +252,26 @@ function DialogRow({
 }
 
 /**
- * 페어 모드 4 phase 구분 마커.
- * 현재 turn index가 각 phase의 시작점이면 라벨 반환.
+ * 페어 모드 phase 마커.
+ * 짧은 dialogue (20 turns 미만)에서는 phase 구분 없이 자연스럽게 흐름.
+ * 긴 dialogue에서만 4 phase 마커 표시.
  *
  * Phase 비율 (대략):
  * - Opening: 0-15%
  * - Main exchange: 15-50%
  * - Development: 50-80%
  * - Closing: 80-100%
- *
- * 첫 turn에는 'Opening' 라벨, 각 phase 경계에서 라벨 반환.
  */
 function getPhaseMarker(turnIndex: number, total: number): string | null {
+  // 짧은 dialogue는 phase 마커 안 씀 (거래·짧은 만남 회화)
+  if (total < 20) return null
+
   const ratio = turnIndex / total
   const prevRatio = turnIndex > 0 ? (turnIndex - 1) / total : -1
 
-  // Opening 시작 (첫 turn)
   if (turnIndex === 0) return 'Opening — 인사·근황'
-  // Main exchange 시작 (15% 경계 통과)
   if (prevRatio < 0.15 && ratio >= 0.15) return 'Main — 본 주제 깊이'
-  // Development 시작 (50% 경계 통과)
   if (prevRatio < 0.5 && ratio >= 0.5) return 'Development — 전개 변화'
-  // Closing 시작 (80% 경계 통과)
   if (prevRatio < 0.8 && ratio >= 0.8) return 'Closing — 마무리'
   return null
 }

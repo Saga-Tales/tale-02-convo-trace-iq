@@ -30,35 +30,44 @@ const PAIR_MODE_GUIDE = `
 두 사람이 디바이스 없이 직접 음성으로 회화 (AI는 시나리오만 만듦).
 영어 회화 동아리에서 페어 (또는 4인 그룹의 페어 단위) 진행.
 
-## 시나리오 깊이 — 매우 중요
-이 시나리오는 페어가 같은 dialogue를 두 번 (역할 바꿔서) 진행하므로 충분히 깊어야 함.
-- keyExpressions: 25-40 turns (필수, 짧으면 회화가 빈약해짐)
-- 각 turn은 1-2 짧은 문장이지만, 전체 dialogue는 자연스럽게 깊어짐
-- 두 역할(userRole, aiRole)이 균형 있게 등장 (각자 최소 12-15회 발화)
+## 시나리오 형식은 상황에 따라 다르게
+시나리오 형식과 길이는 상황·카테고리·맥락에 자연스럽게 맞춰야 함. 일률적 cookie cutter X.
 
-## Dialogue 구조 — 4 phase로 흘러야 함
-시나리오는 아래 4단계로 자연스럽게 흘러가야 한다 (단계 명시 X, 자연스럽게 녹임):
+### 상황별 자연스러운 분량 가이드
+- **거래성 회화** (쇼핑·식당·점원): 10-20 turns. 명확한 단계, 짧고 실용적.
+- **인사·짧은 만남** (지나가다 만난 동료): 10-15 turns.
+- **친구 카페 잡담**: 20-35 turns. 자유로운 흐름, 화제 자연스럽게 변경.
+- **면접·인터뷰**: 25-40 turns. 한쪽이 주로 질문, 다른쪽이 답변·부연.
+- **깊은 토론·storytelling**: 35-50 turns. 한쪽이 길게 풀고 후속 질문, 의견 차이.
+- **비즈니스 협상·미팅**: 25-40 turns. 명확한 의제, 입장 차이.
 
-1. **Opening (4-6 turns)**: 인사, 근황 묻기, 만난 분위기 설정
-2. **Main exchange (10-15 turns)**: 본 주제 깊이 들어가기. 한쪽이 정보·고민·계획을 공유하고 상대가 질문·반응
-3. **Development (8-12 turns)**: 전개 변화 — 새로운 정보, 의견 차이, 작은 plot twist, 결정의 순간
-4. **Closing (4-6 turns)**: 마무리, 다음 약속, 인상적인 표현으로 끝맺음
+상황이 짧으면 짧게, 깊으면 깊게. 사용자의 hint나 카테고리 보고 자연스러운 분량 결정.
+
+## Dialogue 흐름 (참고용 권장 구조 — 강제 X)
+긴 회화 (25+ turns) 의 경우 자연스럽게 4 phase로 흐르면 좋음:
+- **Opening**: 인사·근황·분위기 설정
+- **Main exchange**: 본 주제 깊이 들어가기
+- **Development**: 전개 변화·plot twist·의견 차이
+- **Closing**: 마무리·다음 약속
+
+짧은 거래 회화 (10-20 turns) 는 Opening + 거래 + Closing 정도로도 충분. 무리하게 4 phase 안 쓸 것.
 
 ## 정보 비대칭 — 깊이의 핵심
-두 역할이 각자 다른 정보·입장·맥락을 가져야 dialogue가 진짜 깊어진다:
-- 한쪽이 새로운 경험·계획을 공유, 다른쪽이 들으면서 점점 깊은 질문
-- 또는 두 사람의 입장 차이 (예: 도시 vs 시골 선호, 새 직장 vs 안정 직장)
-- 단순한 정보 교환 X — 감정·이유·미래 계획까지 들어가야 함
+긴 회화일수록 두 역할이 각자 다른 정보·입장·맥락을 가져야 함:
+- 한쪽이 새로운 경험·계획 공유, 다른쪽이 점점 깊은 질문
+- 또는 두 사람의 입장 차이 (예: 도시 vs 시골 선호, 모험 vs 안정)
+- 단순 정보 교환 X — 감정·이유·미래 계획까지
+
+짧은 거래 회화는 정보 비대칭이 명확함 (점원 vs 손님 등) — 이건 자연스러우니 OK.
+
+## 두 역할 균형
+두 역할(userRole, aiRole)이 균형 있게 등장. 한쪽이 압도적이면 안 됨.
+정확히 50:50일 필요는 없지만 한쪽이 80% 이상은 X.
 
 ## 동아리 컨텍스트
-시나리오는 이 4단계로 진행될 거다:
-1) 표현 연습 (3-4분) - keyExpressions 보면서 핵심 표현 공유
-2) 상황극 진행 (3-4분) - 한 명이 userRole, 다른 명이 aiRole
-3) 역할 바꿔서 (3-4분) - 같은 시나리오 반대 입장
-4) 마무리 (5분) - 잘쓴 표현 정리
-
-이 흐름에 맞게 dialogue가 양쪽 입장 모두 학습 가치 있게 만들어줘.
-누가 어떤 역할 맡을지는 페어가 자유 결정. 이름 없는 역할 (예: '대학 친구', '점원')으로 표현.
+시나리오는 페어가 ②③ 두 번 (역할 바꿔서) 진행할 수 있어야 함.
+양쪽 입장 모두 학습 가치 있게.
+누가 어떤 역할 맡을지는 페어가 자유 결정. 이름 없는 역할 (예: '대학 친구', '점원')으로.
 `
 
 function buildSystemPrompt(mode: SessionMode): string {
@@ -147,19 +156,17 @@ ${opts.recallPhrases
     opts.mode === 'pair'
       ? `
 
-⚠️ 페어 모드 필수 요건 (반드시 지킬 것):
-- keyExpressions는 반드시 25-40 turns. 절대 짧게 만들지 말 것 (짧으면 reject됨).
-- Opening (4-6) → Main exchange (10-15) → Development (8-12) → Closing (4-6) 4 phase 구조로 자연스럽게 흐를 것.
-- 두 역할이 각자 다른 정보·입장·맥락을 가져야 함 (정보 비대칭).
-- Development phase에 자연스러운 전개 변화 (새 화제·의견 차이·결정의 순간) 포함.
-- userRole, aiRole 모두 이름 없는 일반명사로 (예: '대학 친구', '점원' — 'Alex' 같은 고유명사 X).`
+페어 모드 가이드:
+- 카테고리·hint·상황에 자연스러운 분량으로 (거래 회화면 짧게 10-20 turns, 깊은 회화면 35-50 turns).
+- 두 역할(userRole, aiRole)은 이름 없는 일반명사로 (예: '대학 친구', '점원').
+- 두 역할이 균형 있게 등장 (한쪽 80% 이상 X).`
       : ''
   }`
 
   const text = await callOnce({
     system: buildSystemPrompt(opts.mode),
     user: userPrompt,
-    maxTokens: opts.mode === 'pair' ? 6000 : 2000,
+    maxTokens: opts.mode === 'pair' ? 7000 : 2000,
   })
 
   const cleaned = text
@@ -224,10 +231,10 @@ function validateScenario(raw: unknown, mode: SessionMode): Scenario {
 
   // 모드별 keyExpressions 길이 cap
   // - 솔로: 5-10 turns (AI streaming 회화 흐름 가이드)
-  // - 페어: 25-40 turns (3-4분 직접 회화 두 번 진행에 충분한 분량, 4 phase 구조)
+  // - 페어: 8-50 turns (상황별 자연스러운 분량 — 거래 회화부터 깊은 토론까지)
   const keyExpressions = r.keyExpressions
-  const minTurns = mode === 'pair' ? 25 : 3
-  const maxTurns = mode === 'pair' ? 40 : 10
+  const minTurns = mode === 'pair' ? 8 : 3
+  const maxTurns = mode === 'pair' ? 50 : 10
   if (
     !Array.isArray(keyExpressions) ||
     keyExpressions.length < minTurns ||
@@ -264,13 +271,17 @@ function validateScenario(raw: unknown, mode: SessionMode): Scenario {
     dialogTurns.push({ speaker, english, intentKo })
   }
 
-  // 페어 모드는 두 역할 균형 검증 — 각자 최소 10회 발화 (25 turns 시 최소 40% 균형)
+  // 페어 모드 균형 검증 — 한쪽이 80% 이상 차지하면 reject (압도 방지)
+  // 정확한 50:50은 강제 X. 다양한 형식 (인터뷰는 한쪽이 주로 질문 등) 허용.
   if (mode === 'pair') {
     const userTurns = dialogTurns.filter((t) => t.speaker === 'user').length
     const partnerTurns = dialogTurns.filter((t) => t.speaker === 'partner').length
-    if (userTurns < 10 || partnerTurns < 10) {
+    const total = dialogTurns.length
+    const userRatio = userTurns / total
+    const partnerRatio = partnerTurns / total
+    if (userRatio > 0.8 || partnerRatio > 0.8) {
       throw new Error(
-        `페어 모드 두 역할 균형 실패 (user ${userTurns}, partner ${partnerTurns} — 각자 최소 10회 발화 필요)`,
+        `페어 모드 두 역할 균형 실패 (한쪽이 80% 이상 차지: user ${userTurns}/${total}, partner ${partnerTurns}/${total})`,
       )
     }
   }
